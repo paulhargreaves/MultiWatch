@@ -1,0 +1,4 @@
+#!/usr/bin/env osascript
+on run argv
+  tell application "System Events" to keystroke item 1 of argv
+end run
