@@ -1,0 +1,18 @@
+# This file describes font rendering options
+# 
+# <filename>, <friendly_name>, <px_size>, <clock_font>, <pixel_font>
+#
+# <filename>      - filename of the ttf font to render 
+#                   ('#' is an illegal character in the name and avoid spaces in filenames)
+# <friendly_name> - name that will be used in the header file generated
+#                   ('#' and spaces are illegal characters in the name)
+# <px_size>       - size in px to render the font
+# <clock_font>    - (y/n) only render characters 0 - 9, :, a, p, A, P (for use as a clock)
+# <pixel_font>    - (y/n) don't render grayscale (for pixel fonts)
+#
+# Example:
+# good_times.ttf, good_times_10, 10, n, n
+#Clockopia.ttf, clockopia_32, 32, y, n
+#Clockopia.ttf, clockopia_22, 22, y, n
+#Courier.ttf, courier_22, 22, y, n
+#Courier.ttf, courier_12, 12, n, n
