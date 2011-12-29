@@ -1,0 +1,6 @@
+Flash bytes remaining with just the framework is  4475
+mode_7segment_watch_functions leaves  3283 so consumes 1192 bytes
+mode_powerpoint_watch_functions leaves  3455 so consumes 1020 bytes
+mode_demo_watch_functions leaves  3943 so consumes 532 bytes
+mode_nixie_watch_functions leaves  3631 so consumes 844 bytes
+mode_hourlychime_watch_functions leaves  4311 so consumes 164 bytes

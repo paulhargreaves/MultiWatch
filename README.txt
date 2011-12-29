@@ -15,13 +15,12 @@ pretty watch face!
 
 See mode_nixie.c/h or mode_powerpoint.c/h for more fully featured examples.
 
-The framework consumes approximately 1091 bytes of storage out of the 5590 that
-the watch gets with the minimum of functions compiled in. mode_demo consumes
-about 532 bytes and you will want to remove it from the watch once you have
-experimented with it - just go into watch_config.h and reduce the number of
-modes by 1 and // out the mode_demo_watch_functions, line to remove it.
-mode_powerpoint consumes about 1020 bytes. mode_7segment consumes about 1192
-bytes. mode_nixie consumes about 844 bytes. 
+With just the minimum number of funcitons compiled in and no framework the
+watch has around 5590 bytes of free flash space. You can see how much each
+watchface consumes (worse case) in the spaceused.txt file. Faces that use
+the same pulse_* functions as other watches will use less combined, but this
+should give you a starting point for working out how much you can get onto
+your watch.
 
 
 In your watch mode code:
