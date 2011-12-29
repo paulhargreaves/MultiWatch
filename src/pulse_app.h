@@ -62,6 +62,12 @@ int multiFadeMaxBrightness;
 // Do this in your INIT
 int multiModeChangePressTime;
 
+// Set to true in your MODEINIT function if you do not want this mode to be
+// active. This is only really used for modes that just set alarms or monitor
+// in the background via their own registered pulse_ timers, and should rarely
+// be needed in normal watch modes.
+bool multiSkipThisWatchMode;
+
 // The capabilites that your watch could / should implement
 enum multi_function_table {
   COLDBOOT, // called on first boot of the watch

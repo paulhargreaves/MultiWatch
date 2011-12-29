@@ -215,18 +215,23 @@ void multi_change_watch_mode() {
   // Set powerdown timer now..., the individual modes may override
   multi_update_power_down_timer(MULTI_DEFAULT_POWERDOWN_TIME);
 
-  // Now we change the mode
-  multiCurrentWatchMode++;
-  if (multiCurrentWatchMode >= WATCH_MODES ) {
-    multiCurrentWatchMode = 0;
-  }
-
   multiLoopTimeMS = 200; // how long we normally loop a watch for, 200ms
   multiModeChangePressTime = MULTI_MODE_CHANGE_PRESS_TIME;
 
+  multiSkipThisWatchMode = true;
+  // Now we change the mode
+  while (multiSkipThisWatchMode) {
+    multiSkipThisWatchMode = false; // do not skip unless the mode wants it
 
-  // Then we tell the mode it needs to init variables etc
-  multi_watch_functions[multiCurrentWatchMode](MODEINIT);
+    multiCurrentWatchMode++;
+    if (multiCurrentWatchMode >= WATCH_MODES ) {
+      multiCurrentWatchMode = 0;
+    }
+
+    // Then we tell the mode it needs to init variables etc
+    // In here the mode may choose to set multiSkipThisWatchMode
+    multi_watch_functions[multiCurrentWatchMode](MODEINIT);
+  }
 
   // Then we pretend we just work up
   multi_woke_from_sleep_by_button();

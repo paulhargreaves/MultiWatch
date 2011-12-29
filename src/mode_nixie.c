@@ -109,6 +109,8 @@ void mode_nixie_draw_watch_face() {
   struct pulse_time_tm now;
   pulse_get_time_date(&now);
   multi_debug("time %i:%i:%i\n", now.tm_hour, now.tm_min, now.tm_sec);
+  multi_debug("date Day%i: Mon%i: Year%i Wday:%i YDay:%i\n",
+              now.tm_mday, now.tm_mon, now.tm_year, now.tm_wday, now.tm_yday);
 
   // Hack the seconds over the hours if in seconds mode
   if ( modeNixieSecondsMode == true ) {

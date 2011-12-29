@@ -38,10 +38,7 @@ and will never trigger if a particular watch mode is not the active one.
 
 The only time you would use pulse_register_timer/cancel_timer would be in a 
 notifications mode where the watch mode isn't real and does not have a normal
-display face. One hasn't been implemented yet so the framework may need slight
-adjustments, but start by having the BUTTONWAKE call multi_change_watch_mode 
-(though by default that function isn't exposed to mode_xxx.c so will need
-exposing).
+display face. 
 
 Each time your watch mode wakes from sleep you will need to re-register
 all your timers (multi...); in your MODEINIT function you need to set all the
