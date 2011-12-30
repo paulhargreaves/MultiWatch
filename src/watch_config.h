@@ -18,12 +18,12 @@
 // number of entries in the multi_watch_functions
 void (* const multi_watch_functions[WATCH_MODES])(const enum multi_function_table func, ...) = { 
   //mode_hourlychime_watch_functions,
-  mode_ryansimple_watch_functions,
+  //mode_ryansimple_watch_functions,
   mode_binary_watch_functions,
   mode_nixie_watch_functions,
   mode_demo_watch_functions,
   mode_powerpoint_watch_functions,
-  //mode_7segment_watch_functions,
+  mode_7segment_watch_functions,
 };
 
 // end
