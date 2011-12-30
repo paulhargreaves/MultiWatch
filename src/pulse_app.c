@@ -38,7 +38,7 @@ typedef struct {
 
 #define MULTI_FADE_MINIMUM_BRIGHTNESS 0
 #define MULTI_FADE_MAXIMUM_BRIGHTNESS 100
-#define MULTI_FADE_BRIGHTNESS_STEP 20 
+#define MULTI_FADE_BRIGHTNESS_STEP 10 
 #define MULTI_FADE_ADJUST_TIME_MS 20
 
 
@@ -109,6 +109,7 @@ void multi_woke_from_sleep_by_button() {
   for(int i=MULTI_FADE_MINIMUM_BRIGHTNESS;i<=multiFadeMaxBrightness;
       i=i+MULTI_FADE_BRIGHTNESS_STEP) {
     if (i <= multiFadeMaxBrightness) {
+      multi_debug("Bright %i delay %i\n", i, MULTI_FADE_ADJUST_TIME_MS);
       pulse_oled_set_brightness(i);
       pulse_mdelay(MULTI_FADE_ADJUST_TIME_MS); // faster...
     }
@@ -363,6 +364,7 @@ void main_app_handle_doz() {
   for(int i=MULTI_FADE_MAXIMUM_BRIGHTNESS;i>=MULTI_FADE_MINIMUM_BRIGHTNESS;
       i=i-MULTI_FADE_BRIGHTNESS_STEP) {
     if (i >= MULTI_FADE_MINIMUM_BRIGHTNESS) {
+      multi_debug("Bright %i\n", i);
       pulse_oled_set_brightness(i);
       pulse_mdelay(MULTI_FADE_ADJUST_TIME_MS); // faster...
     }
