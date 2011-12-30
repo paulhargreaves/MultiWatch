@@ -110,8 +110,10 @@ void multi_woke_from_sleep_by_button() {
       i=i+MULTI_FADE_BRIGHTNESS_STEP) {
     if (i <= multiFadeMaxBrightness) {
       multi_debug("Bright %i delay %i\n", i, MULTI_FADE_ADJUST_TIME_MS);
+      #ifndef PULSE_SIMULATOR
       pulse_oled_set_brightness(i);
       pulse_mdelay(MULTI_FADE_ADJUST_TIME_MS); // faster...
+      #endif
     }
   }
   pulse_oled_set_brightness(multiFadeMaxBrightness); // shouldn't be needed

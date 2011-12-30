@@ -26,7 +26,7 @@ enum multi_function_table {
 void mode_demo_cold_boot() {
   multi_debug("cold boot\n");
   printf("COLDBOOT\nThe display is not really available...\n");
-  pulse_mdelay(2000);
+  pulse_mdelay(1000);
 }
 
 void mode_demo_init() {
