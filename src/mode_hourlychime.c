@@ -1,8 +1,8 @@
 // (C)2011 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
 //
 // Hourly chime
-// An example of hooking into the framework but not really using any of it.
 // Buzzes the watch every hour from 8:59am until 5:59pm on workdays. 
+// Pressing the button enables or disables the alarm
 // 
 // Licensed under Creative Commons: Non-Commercial, Share-Alike, Attributation
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
@@ -13,21 +13,19 @@
 #include "pulse_app.h"
 #include "mode_hourlychime.h"
 
+
+PulseAlarm *modeHourlychimeAlarm;
+
+void mode_hourlychime_refresh_alarm_data(void) {
+  #ifndef PULSE_SIMULATOR
+  modeHourlychimeAlarm = pulse_get_alarm(); 
+  #endif
+}
+
 void mode_hourlychime_show_next_alarm(void) {
   struct pulse_time_tm now;
   pulse_get_time_date(&now);
-  #ifdef PULSE_SIMULATOR
-  // To be removed once the sim supports PulseAlarm even in basic form
-  PulseAlarm *nextAlarm = malloc(sizeof(PulseAlarm)); // leak - who cares, sim
-  nextAlarm->enabled = 1; // some fake data for testing
-  nextAlarm->hour = now.tm_hour+1; // fake
-  nextAlarm->min = now.tm_min+1; // fake
-  for(int i=1; i<=5; i++) { // fake
-    nextAlarm->daysActive[i] = true; // fake
-  }  // fake
-  #else
-  PulseAlarm *nextAlarm = pulse_get_alarm(); // the version on the watch
-  #endif
+  mode_hourlychime_refresh_alarm_data();
   
   const char daysOfWeek[][4] = 
                            { "SUN", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" }; // Which Sun is the real Sunday? Please stand up!
@@ -36,18 +34,33 @@ void mode_hourlychime_show_next_alarm(void) {
   printf("Day: [%i] %s\n", now.tm_wday, daysOfWeek[now.tm_wday]);
   printf("\n* Next alarm\n\n");
 
-  printf("Enabled: %i\n", nextAlarm->enabled);
-  printf("Time: %02i:%02i\n", nextAlarm->hour, nextAlarm->min);
-  printf("Days:\n");
-  for(int i=0; i<8; i++) {
-    if(nextAlarm->daysActive[i]) {
-      printf("%s ", daysOfWeek[i]);
+  printf("Enabled: %i\n\n", modeHourlychimeAlarm->enabled);
+  if (modeHourlychimeAlarm->enabled) {
+    printf("Time: %02i:%02i\n", modeHourlychimeAlarm->hour, 
+           modeHourlychimeAlarm->min);
+
+    printf("Days:\n");
+    for(int i=0; i<8; i++) {
+      if(modeHourlychimeAlarm->daysActive[i]) {
+        printf("%s ", daysOfWeek[i]);
+      }
     }
-  }
-  printf("\n");
+    printf("\n");
+  } // alarm is enabled
 }
 
+void mode_hourlychime_clear_alarm(void) {
+  multi_debug("mode_hourlychime_clear_alarm\n");
+  PulseAlarm nextAlarm;
+  nextAlarm.enabled = false;
+  pulse_set_alarm(&nextAlarm);
+  #ifdef PULSE_SIMULATOR
+  modeHourlychimeAlarm->enabled = 0; // some fake data for testing
+  #endif
+}
+  
 void mode_hourlychime_set_next_alarm(void) {
+  multi_debug("mode_hourlychime_set_next_alarm\n");
   PulseAlarm nextAlarm;
   struct pulse_time_tm now;
   pulse_get_time_date(&now);
@@ -81,6 +94,9 @@ void mode_hourlychime_set_next_alarm(void) {
   //nextAlarm.msg = "Some message";
   multi_debug("alarm hour %i min %i\n",nextAlarm.hour, nextAlarm.min);
   pulse_set_alarm(&nextAlarm);
+  #ifdef PULSE_SIMULATOR
+  modeHourlychimeAlarm->enabled = 1; // some fake data for testing
+  #endif
 }
 
 void mode_hourlychime_watch_functions(const enum multi_function_table iFunc, ...) {
@@ -92,15 +108,34 @@ void mode_hourlychime_watch_functions(const enum multi_function_table iFunc, ...
       // Here is where we set up this special watch mode
       pulse_register_callback(ACTION_ALARM_FIRING, 
                               (PulseCallback) &mode_hourlychime_set_next_alarm);
-      mode_hourlychime_set_next_alarm();
+      #ifdef PULSE_SIMULATOR
+      modeHourlychimeAlarm = malloc(sizeof(PulseAlarm));
+      modeHourlychimeAlarm->enabled = 1; // some fake data for testing
+      modeHourlychimeAlarm->hour = 10; // fake
+      modeHourlychimeAlarm->min = 42; // fake
+      for(int i=1; i<=5; i++) { // fake
+        modeHourlychimeAlarm->daysActive[i] = true; // fake
+      } 
+      #endif
       break;
     case BUTTONWAKE:
       mode_hourlychime_show_next_alarm();
       break;
-    //case MODEINIT:
+    case BUTTONUP:
+      mode_hourlychime_refresh_alarm_data();
+      if (modeHourlychimeAlarm->enabled) {
+        mode_hourlychime_clear_alarm();
+      } else {
+         mode_hourlychime_set_next_alarm();
+      }
+      pulse_blank_canvas();
+      mode_hourlychime_show_next_alarm();
+      break;
+    case MODEINIT:
+      multiLoopTimeMS = 0;
       // Here is where we tell the framework we do not want to be a face
       //multiSkipThisWatchMode = true;
-    //  break;
+      break;
     default: // ignore features we do not use
       break;
   }

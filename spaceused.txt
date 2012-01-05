@@ -5,4 +5,4 @@ mode_demo_watch_functions leaves  3943 so consumes 532 bytes
 mode_nixie_watch_functions leaves  3631 so consumes 844 bytes
 mode_binary_watch_functions leaves  4127 so consumes 348 bytes
 mode_ryansimple_watch_functions leaves  2691 so consumes 1784 bytes
-mode_hourlychime_watch_functions leaves  4023 so consumes 452 bytes
+mode_hourlychime_watch_functions leaves  3919 so consumes 556 bytes
