@@ -28,7 +28,7 @@ void mode_hourlychime_show_next_alarm(void) {
   mode_hourlychime_refresh_alarm_data();
   
   const char daysOfWeek[][4] = 
-                           { "SUN", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" }; // Which Sun is the real Sunday? Please stand up!
+                           { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" }; 
   printf("* Now\n\n");
   printf("Time: %02i:%02i\n", now.tm_hour, now.tm_min);
   printf("Day: [%i] %s\n", now.tm_wday, daysOfWeek[now.tm_wday]);
