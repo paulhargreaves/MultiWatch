@@ -1,8 +1,6 @@
 // (C)2011 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
 //
 // Binary watch
-// An example of hooking into the framework but not really using any of it.
-// Buzzes the watch every hour from 8:59am until 5:59pm on workdays. 
 // 
 // Licensed under Creative Commons: Non-Commercial, Share-Alike, Attributation
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
