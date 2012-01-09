@@ -78,12 +78,12 @@ void mode_hourlychime_set_next_alarm(void) {
   // nextAlarm.durationMS = 0; // undefined
   nextAlarm.alert.type = 1;
   //nextAlarm.alert.vibe_intensity = 0; // undefined
-  nextAlarm.alert.on1 = 35;
+  nextAlarm.alert.on1 = 25;
   nextAlarm.alert.off1 = 10;
-  nextAlarm.alert.on2 = 35;
-  nextAlarm.alert.off2 = 10;
+  nextAlarm.alert.on2 = 20;
+  nextAlarm.alert.off2 = 5;
   nextAlarm.alert.on3 = 1;
-  nextAlarm.alert.off3 = 0;
+  nextAlarm.alert.off3 = 1;
   nextAlarm.alert.on4 = 1;
   nextAlarm.daysActive[0] = false;
   nextAlarm.daysActive[6] = false;
@@ -109,6 +109,7 @@ void mode_hourlychime_watch_functions(const enum multi_function_table iFunc, ...
       pulse_register_callback(ACTION_ALARM_FIRING, 
                               (PulseCallback) &mode_hourlychime_set_next_alarm);
       #ifdef PULSE_SIMULATOR
+      #include <stdlib.h>
       modeHourlychimeAlarm = malloc(sizeof(PulseAlarm));
       modeHourlychimeAlarm->enabled = 1; // some fake data for testing
       modeHourlychimeAlarm->hour = 10; // fake

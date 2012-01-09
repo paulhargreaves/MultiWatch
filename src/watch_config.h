@@ -8,11 +8,12 @@
 #include "mode_hourlychime.h"
 #include "mode_binary.h"
 #include "mode_ryansimple.h"
+#include "mode_notifications.h"
 
 // Then put in the number of modes, then add your handler function to the
 // table below
 
-#define WATCH_MODES 5
+#define WATCH_MODES 6
 
 // Strange error about excess elements? Check your WATCH_MODES above matches
 // number of entries in the multi_watch_functions
@@ -24,6 +25,7 @@ void (* const multi_watch_functions[WATCH_MODES])(const enum multi_function_tabl
   mode_demo_watch_functions,
   mode_powerpoint_watch_functions,
   mode_7segment_watch_functions,
+  mode_notifications_watch_functions,
 };
 
 // end

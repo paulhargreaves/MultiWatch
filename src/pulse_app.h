@@ -39,6 +39,7 @@ void multi_update_power_down_timer(uint32_t); // use instead of pulse_update_pow
 int32_t multi_register_timer(uint32_t, PulseCallback, void *); // use instead of pulse_register_timer
 void multi_vibe_for_ms(uint32_t); // send time in ms, motor will come on and off automatically
 
+void multi_force_refresh_of_watch_face(void); // call only in your notifications app if you have overwritten the display and are now finished. Generally not needed for most watch faces. See mode_notifcations.c for an example.
 
 // This controls how quickly the loop function runs. You should change it in
 // your MODEINIT function if you feel that 200ms is not the right value for your
@@ -67,6 +68,23 @@ int multiModeChangePressTime;
 // in the background via their own registered pulse_ timers, and should rarely
 // be needed in normal watch modes.
 bool multiSkipThisWatchMode;
+
+// Set to true if your watch face is happy that screen writes from other
+// watch faces could occur. Normally you can leave this as-is (false) and the
+// framework will automatically refresh itself (as if mode had just changed).
+// If you are writing a game then you likely want to set this to true and
+// you should monitor multiYourWatchFaceWasOverwritten in your main loop -
+// as soon as multiYourWatchFaceWasOverwritten becomes true then you know that
+// you need to blank the canvas and rebuild the normal users view.
+bool multiMyWatchFaceCanHandleScreenOverwrites;
+
+// Additional note about multiYourWatchFaceWasOverwritten - if you are
+// monitoring this flag then whenever you have rebuilt your screen you should
+// set this flag to false as the framework will not do it. Also if you have
+// not set multiMyFaceCanHandleScreenOverwrites to true then you should
+// IGNORE this variable entirly.
+bool multiYourWatchFaceWasOverwritten; 
+
 
 // The capabilites that your watch could / should implement
 enum multi_function_table {

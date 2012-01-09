@@ -198,6 +198,16 @@ void multi_vibe_off() {
 }
 
 
+// Externalised and used by notification apps 
+void multi_force_refresh_of_watch_face() { 
+  multiYourWatchFaceWasOverwritten = true;
+  assert(multiCurrentWatchMode != -1);
+  if ( !multiMyWatchFaceCanHandleScreenOverwrites ) {
+    multiCurrentWatchMode--;
+    multi_change_watch_mode();
+  }
+}
+
 // Change to the next watch mode
 void multi_change_watch_mode() {
   multi_debug("multi-change-watch-mode from %i\n", multiCurrentWatchMode);
@@ -220,6 +230,8 @@ void multi_change_watch_mode() {
 
   multiLoopTimeMS = 200; // how long we normally loop a watch for, 200ms
   multiModeChangePressTime = MULTI_MODE_CHANGE_PRESS_TIME;
+  multiYourWatchFaceWasOverwritten = false;
+  multiMyWatchFaceCanHandleScreenOverwrites = false;
 
   multiSkipThisWatchMode = true;
   // Now we change the mode
