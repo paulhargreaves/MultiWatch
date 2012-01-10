@@ -86,8 +86,9 @@ bool multiMyWatchFaceCanHandleScreenOverwrites;
 bool multiYourWatchFaceWasOverwritten; 
 
 
-// This structure is populated automatically every time a multi_event fires
-// so should be reasonably accurate...
+// This structure is populated automatically frequently so should be
+// reasonably accurate... but is only available after MODEINIT in your watch
+// not at COLDBOOT
 struct pulse_time_tm multiTimeNow;  // you can change the data in your funcs
 
 // The capabilites that your watch could / should implement
