@@ -39,7 +39,7 @@ void multi_update_power_down_timer(uint32_t); // use instead of pulse_update_pow
 int32_t multi_register_timer(uint32_t, PulseCallback, void *); // use instead of pulse_register_timer
 void multi_vibe_for_ms(uint32_t); // send time in ms, motor will come on and off automatically
 
-void multi_force_refresh_of_watch_face(void); // call only in your notifications app if you have overwritten the display and are now finished. Generally not needed for most watch faces. See mode_notifcations.c for an example.
+void multi_external_notification_handler_complete(void); // call only if you have a notifcation when your function has finished. This will allow the existing watch face to rebuild itself as it's likely you have overwritten it with an alert. See mode_notifcations.c for an example.
 
 // This controls how quickly the loop function runs. You should change it in
 // your MODEINIT function if you feel that 200ms is not the right value for your

@@ -2,6 +2,9 @@
 //
 // Notifications watch face
 // An example of hooking into the framework but not really using any of it.
+// ONLY ONE Notification handler can be compiled into the framework as there
+// is only a single callback using pulse_register_callback. If there are
+// real-world examples of where multiple handlers are useful then let me know.
 // 
 // Licensed under Creative Commons: Non-Commercial, Share-Alike, Attributation
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
@@ -14,37 +17,41 @@
 
 
 // A not very beautiful example of how notifications can be handled
+// Probably no need to pause in this function as the function
+// multi_external_notification_hander_complete() does that to allow the
+// vibrate to occur properly
 void mode_notifications_new_notification(PulseNotificationId id) {
-    // Clear the screen - it's mine temporarily
-    pulse_blank_canvas();
+  // Clear the screen - it's mine temporarily
+  pulse_blank_canvas();
  
-    struct PulseNotification *notification = pulse_get_notification(id);
-    printf("Type: ", notification->type);
-    switch(notification->type) {
-      case PNT_MAIL:
-        printf("Mail");
-        break;
-      case PNT_SMS:
-        printf("SMS");
-        break;
-      case PNT_CALENDAR:
-        printf("Calendar");
-        break;
-      case PNT_PHONE:
-        printf("Phone");
-        break;
-      default: // rest are not well described!
-        printf("%i - unsure", notification->type);
-        break;
-    }
-      
-    printf("\n\n\nMessage:\n\n%s", notification->sender);
-    //printf("Body:\n%s\n", notification->body);
+  struct PulseNotification *notification = pulse_get_notification(id);
+  printf("Type: ", notification->type);
+  switch(notification->type) {
+    case PNT_MAIL:
+      printf("Mail");
+      break;
+    case PNT_SMS:
+      printf("SMS");
+      break;
+    case PNT_CALENDAR:
+      printf("Calendar");
+      break;
+    case PNT_PHONE:
+      printf("Phone");
+      break;
+    default: // rest are not well described!
+      printf("%i - unsure", notification->type);
+      break;
+  }
+    
+  printf("\n\n\nMessage:\n\n%s\n\n", notification->sender);
+  if (notification->body) { 
+    printf("Body:\n%s\n", notification->body);
+  }
 
-    pulse_mdelay(5000);
-
-    // Pass back control to the original watch face
-    multi_force_refresh_of_watch_face();
+  // Pass back control to the framework; should be the last thing our
+  // handler does. 
+  multi_external_notification_handler_complete();
 }
 
 

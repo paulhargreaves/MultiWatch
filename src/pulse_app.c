@@ -45,6 +45,8 @@ typedef struct {
 int multiCurrentWatchMode = -1; // first mode is 0, -1 will be incremented 
 int multiLastWatchMode; // used to see if button_up should be ignored
 int multiPowerDownTimeout; // how long do we want to powerdown for?
+bool multiPauseAllTimers = false; // if true we are not passing users timer calls back until later
+int32_t multiPauseAllTimersTimerID = -1; // used to store the timer for pausing
 
 // Space for our timer callbacks
 multiTimerCallbackStruct 
@@ -94,6 +96,7 @@ void multi_woke_from_sleep_by_button() {
   multiVibeOnTimerID = -1;
   multiTickTockTimerID = -1;
   multiFadeMaxBrightness = MULTI_FADE_MAXIMUM_BRIGHTNESS;
+  assert(multiPauseAllTimers == false);
 
   // clear the canvas
   pulse_blank_canvas(); 
@@ -105,7 +108,10 @@ void multi_woke_from_sleep_by_button() {
   // set power down timer to whatever the user set
   multi_update_power_down_timer(multiPowerDownTimeout);
 
-  // Turn the brightness up 
+  // disabled "nice" fading to recover bytes - so now we start dark and go
+  // bright after the watch face has had it's buttonwake called
+  /*
+  // Turn the brightness up
   for(int i=MULTI_FADE_MINIMUM_BRIGHTNESS;i<=multiFadeMaxBrightness;
       i=i+MULTI_FADE_BRIGHTNESS_STEP) {
     if (i <= multiFadeMaxBrightness) {
@@ -116,6 +122,7 @@ void multi_woke_from_sleep_by_button() {
       #endif
     }
   }
+  */
   pulse_oled_set_brightness(multiFadeMaxBrightness); // shouldn't be needed
 
   // Trigger the tick tock loop for the function
@@ -131,20 +138,26 @@ void multi_tick_tock_loop() {
     multi_watch_functions[multiCurrentWatchMode](MAINLOOP);
 
     multi_cancel_timer(&multiTickTockTimerID);
+    assert(multiTickTockTimerID == -1);
     multiTickTockTimerID = 
         multi_register_timer(multiLoopTimeMS,
                              (PulseCallback) &multi_tick_tock_loop, 0); 
+    assert(multiTickTockTimerID != -1);
   }
 }
 
 void main_app_handle_button_down() {
-  multi_debug("calling multi_button_down[%i]\n", multiCurrentWatchMode);
+  multi_debug("main_app_handle_button_down[%i]\n", multiCurrentWatchMode);
   
-  multiMSAtButtonDown = pulse_get_millis(); // get the time in ms
-  if (multiButtonLongTimerID != -1) {
-    multi_cancel_timer(&multiButtonLongTimerID);
+  if (multiPauseAllTimers) {
+    multi_debug("ignoring button down as we are paused\n");
+    return;
   }
+
+  multiMSAtButtonDown = pulse_get_millis(); // get the time in ms
+  multi_cancel_timer(&multiButtonLongTimerID); // might not be running...
   assert(multiButtonLongTimerID == -1);
+
   multiButtonLongTimerID =
         multi_register_timer(multiModeChangePressTime,
                             (PulseCallback) &multi_change_watch_mode, 0); 
@@ -162,9 +175,7 @@ void multi_vibe_for_ms(uint32_t iTimeToVibeForInMS) {
   multi_debug("multi_vibe_for_ms %i\n", iTimeToVibeForInMS);
 
   // Cancel any vibe timer that may be running, leaving the motor on...
-  if (multiVibeOnTimerID != -1) {
-    multi_cancel_timer(&multiVibeOnTimerID);
-  }
+  multi_cancel_timer(&multiVibeOnTimerID);
   assert(multiVibeOnTimerID == -1);
 
   // short timer? just do it
@@ -191,23 +202,48 @@ void multi_vibe_off() {
 
   pulse_vibe_off();
 
-  if (multiVibeOnTimerID != -1 ) {
-    multi_cancel_timer(&multiVibeOnTimerID); // Cancel it
-  }
+  multi_cancel_timer(&multiVibeOnTimerID); // Cancel it
   assert(multiVibeOnTimerID == -1); // Timer should be off now
 }
 
 
-// Externalised and used by notification apps 
-void multi_force_refresh_of_watch_face() { 
-  multiYourWatchFaceWasOverwritten = true;
-  assert(multiCurrentWatchMode != -1);
+void multi_notification_handler_pause_finished() {
+  multi_debug("multi_notification_handler_pause_finished\n");
+
+  pulse_cancel_timer(&multiPauseAllTimersTimerID);
+  assert(multiPauseAllTimersTimerID == -1);
+  multi_update_power_down_timer(multiPowerDownTimeout); // keep powered up!
+
   if ( !multiMyWatchFaceCanHandleScreenOverwrites ) {
-    multiCurrentWatchMode--;
+    multi_debug("watch face cannot handle pause so resetting it\n");
+    multiCurrentWatchMode--; // change_watch_mode increments back again
     multi_change_watch_mode();
   }
+
+  multiPauseAllTimers = false;// Release existing timers
 }
 
+// Externalised and used by notification apps 
+// If the current face cannot handle screen overwrites then we set the mode
+// back by 1 and then change the mode again - the effect is to restart the
+// current face as if we had just changed to it with the button.
+void multi_external_notification_handler_complete() { 
+  multi_debug("multi_external_notification_handler_complete\n");
+  multiPauseAllTimers = false;// Release existing timers
+  multiYourWatchFaceWasOverwritten = true;
+  assert(multiCurrentWatchMode != -1);
+  multiPauseAllTimers = true;// Pause existing timers
+  
+  // Create a 4 second delay
+  pulse_cancel_timer(&multiPauseAllTimersTimerID); // pulse
+  assert(multiPauseAllTimersTimerID == -1);
+  multiPauseAllTimersTimerID = pulse_register_timer(4000, // pulse
+    (PulseCallback) &multi_notification_handler_pause_finished, 0);
+  assert(multiPauseAllTimersTimerID != -1);
+  multi_debug("delay created id %i\n", multiPauseAllTimersTimerID);
+  multi_update_power_down_timer(multiPowerDownTimeout); // keep powered up!
+}
+  
 // Change to the next watch mode
 void multi_change_watch_mode() {
   multi_debug("multi-change-watch-mode from %i\n", multiCurrentWatchMode);
@@ -222,8 +258,10 @@ void multi_change_watch_mode() {
   // Turn off the vibe motor if running
   multi_vibe_off();
 
-  // Remember what the last mode was, for button_up
-  multiLastWatchMode = multiCurrentWatchMode;
+  // Remember what the last mode was, for button_up so it can ignore first press
+  if (!multiPauseAllTimers) { // but not if we were just pausing...
+    multiLastWatchMode = multiCurrentWatchMode;
+  }
 
   // Set powerdown timer now..., the individual modes may override
   multi_update_power_down_timer(MULTI_DEFAULT_POWERDOWN_TIME);
@@ -233,8 +271,8 @@ void multi_change_watch_mode() {
   multiYourWatchFaceWasOverwritten = false;
   multiMyWatchFaceCanHandleScreenOverwrites = false;
 
-  multiSkipThisWatchMode = true;
   // Now we change the mode
+  multiSkipThisWatchMode = true; 
   while (multiSkipThisWatchMode) {
     multiSkipThisWatchMode = false; // do not skip unless the mode wants it
 
@@ -306,6 +344,19 @@ void multi_timer_fired(void *iData) {
   int id = (int)iData;
   multi_debug("multi_timer_fired %i\n", id);
 
+  // Are we pausing the users timers? If so, just set it up again and
+  // return. This must be kept in-step with multi_register_timer
+  if (multiPauseAllTimers) {
+    multi_debug("pause requested for this id. Recreating.\n");
+    pulse_cancel_timer(&multiTimerCallbackStore[id].callbackID);
+    multiTimerCallbackStore[id].callbackID =
+               pulse_register_timer(500,   // pulse!  And we're waiting 500ms
+               (PulseCallback) &multi_timer_fired, (void*)id);
+    // we do not touch the rest of the users structure so should be able to
+    // call back without any issues
+    return;
+  }
+
   // Fire the users function with the data value
   multiTimerCallbackStore[id].userFunction(multiTimerCallbackStore[id].data);
   multi_debug("callback is now %i\n", multiTimerCallbackStore[id].callbackID);
@@ -337,10 +388,14 @@ void multi_cancel_timer(int32_t *iTimerptr) {
   
 
 void main_app_handle_button_up() {
-  multi_debug("calling multi_button_up[%i]\n", multiCurrentWatchMode);
+  multi_debug("multi_app_handle_button_up[%i]\n", multiCurrentWatchMode);
+
+  if (multiPauseAllTimers) {
+    multi_debug("ignoring button up as we are paused\n");
+    return;
+  }
   multi_debug("multi_button_long_timer_id = %i\n", multiButtonLongTimerID);
   multi_cancel_timer(&multiButtonLongTimerID); // cancel pending mode change
-  multi_debug("multi_button_long_timer_id = %i\n", multiButtonLongTimerID);
   assert(multiButtonLongTimerID == -1);
 
   uint32_t downTime=pulse_get_millis() - multiMSAtButtonDown; // how long
@@ -371,6 +426,7 @@ void main_app_handle_doz() {
   for (unsigned int i=0; i<MULTI_CALLBACK_STORAGE_SIZE; i++) {
     if ( multiTimerCallbackStore[i].callbackID != -1 ) {
        pulse_cancel_timer(&multiTimerCallbackStore[i].callbackID);
+       assert(multiTimerCallbackStore[i].callbackID == -1);
        multiTimerCallbackStore[i].idGivenToCaller = 99999;
     }
   }
