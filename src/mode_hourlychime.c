@@ -23,15 +23,14 @@ void mode_hourlychime_refresh_alarm_data(void) {
 }
 
 void mode_hourlychime_show_next_alarm(void) {
-  struct pulse_time_tm now;
-  pulse_get_time_date(&now);
   mode_hourlychime_refresh_alarm_data();
   
   const char daysOfWeek[][4] = 
                            { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" }; 
   printf("* Now\n\n");
-  printf("Time: %02i:%02i\n", now.tm_hour, now.tm_min);
-  printf("Day: [%i] %s\n", now.tm_wday, daysOfWeek[now.tm_wday]);
+  printf("Time: %02i:%02i\n", multiTimeNow.tm_hour, multiTimeNow.tm_min);
+  printf("Day: [%i] %s\n", multiTimeNow.tm_wday,
+            daysOfWeek[multiTimeNow.tm_wday]);
   printf("\n* Next alarm\n\n");
 
   printf("Enabled: %i\n\n", modeHourlychimeAlarm->enabled);
@@ -62,13 +61,11 @@ void mode_hourlychime_clear_alarm(void) {
 void mode_hourlychime_set_next_alarm(void) {
   multi_debug("mode_hourlychime_set_next_alarm\n");
   PulseAlarm nextAlarm;
-  struct pulse_time_tm now;
-  pulse_get_time_date(&now);
   
   nextAlarm.enabled = true;
-  nextAlarm.hour = now.tm_hour + 1; // Buzz at HH+1:59
-  if(now.tm_min < 58) { // Before HH:58? We want to buzz at HH:59 then
-    nextAlarm.hour = now.tm_hour;
+  nextAlarm.hour = multiTimeNow.tm_hour + 1; // Buzz at HH+1:59
+  if(multiTimeNow.tm_min < 58) { // Before HH:58? We want to buzz at HH:59 then
+    nextAlarm.hour = multiTimeNow.tm_hour;
   }
   if(nextAlarm.hour < 8 || nextAlarm.hour > 17) {
     nextAlarm.hour = 8;

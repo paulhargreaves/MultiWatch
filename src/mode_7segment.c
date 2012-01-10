@@ -165,39 +165,36 @@ void draw_7_colon (uint8_t x, uint8_t y, color24_t color) {
 }
 
 void draw_7segment_clock(color24_t f_color, color24_t b_color) {
-    static struct pulse_time_tm now;
-    pulse_get_time_date(&now);
-
     // Local variable to deal with non-military time display
 
-    if (now.tm_hour > 12) now.tm_hour -= 12; 
+    if (multiTimeNow.tm_hour > 12) multiTimeNow.tm_hour -= 12; 
 
     uint8_t y = SCREEN_HEIGHT/2 - SEGMENT_7_HEIGHT/2;
     uint8_t x = SEGMENT_7_SPACING;
 
     // Draw the "1"
-    draw_7segment_one(now.tm_hour / 10, x, y, SEGMENT_7_HEIGHT, f_color, b_color);
+    draw_7segment_one(multiTimeNow.tm_hour / 10, x, y, SEGMENT_7_HEIGHT, f_color, b_color);
     x += SEGMENT_7_THICKNESS + SEGMENT_7_SPACING;
 
    // Draw the rest of the hour
-    draw_7segment_number(now.tm_hour % 10, x, y, SEGMENT_7_WIDTH, SEGMENT_7_HEIGHT, f_color, b_color);
+    draw_7segment_number(multiTimeNow.tm_hour % 10, x, y, SEGMENT_7_WIDTH, SEGMENT_7_HEIGHT, f_color, b_color);
     x += SEGMENT_7_WIDTH + SEGMENT_7_SPACING + 1;
 
     // Draw the colon
-    draw_7_colon(x, y + 1 + SEGMENT_7_HEIGHT/2, (now.tm_sec % 2 == 0 ? f_color : b_color));
+    draw_7_colon(x, y + 1 + SEGMENT_7_HEIGHT/2, (multiTimeNow.tm_sec % 2 == 0 ? f_color : b_color));
     x += SEGMENT_7_THICKNESS + 2;
 
     // Draw the min
-    draw_7segment_number(now.tm_min / 10, x, y, SEGMENT_7_WIDTH, SEGMENT_7_HEIGHT, f_color, b_color);
+    draw_7segment_number(multiTimeNow.tm_min / 10, x, y, SEGMENT_7_WIDTH, SEGMENT_7_HEIGHT, f_color, b_color);
     x += SEGMENT_7_WIDTH + SEGMENT_7_SPACING + 1;
-    draw_7segment_number(now.tm_min % 10, x, y, SEGMENT_7_WIDTH, SEGMENT_7_HEIGHT, f_color, b_color);
+    draw_7segment_number(multiTimeNow.tm_min % 10, x, y, SEGMENT_7_WIDTH, SEGMENT_7_HEIGHT, f_color, b_color);
 
     // Draw the sec
     y += SEGMENT_7_HEIGHT/2;
     x += SEGMENT_7_WIDTH + 4;
-    draw_7segment_number(now.tm_sec / 10, x, y, SEGMENT_7_WIDTH/2, SEGMENT_7_HEIGHT/2, f_color, b_color);
+    draw_7segment_number(multiTimeNow.tm_sec / 10, x, y, SEGMENT_7_WIDTH/2, SEGMENT_7_HEIGHT/2, f_color, b_color);
     x += SEGMENT_7_WIDTH/2 + 4;
-    draw_7segment_number(now.tm_sec % 10, x, y, SEGMENT_7_WIDTH/2, SEGMENT_7_HEIGHT/2, f_color, b_color);
+    draw_7segment_number(multiTimeNow.tm_sec % 10, x, y, SEGMENT_7_WIDTH/2, SEGMENT_7_HEIGHT/2, f_color, b_color);
 
 
 }

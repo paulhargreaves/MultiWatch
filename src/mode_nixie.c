@@ -106,30 +106,30 @@ void mode_nixie_draw_single_digit(int iDigitWanted,
 }
 
 void mode_nixie_draw_watch_face() {
-  struct pulse_time_tm now;
-  pulse_get_time_date(&now);
-  multi_debug("time %i:%i:%i\n", now.tm_hour, now.tm_min, now.tm_sec);
+  multi_debug("time %i:%i:%i\n", multiTimeNow.tm_hour, multiTimeNow.tm_min,
+              multiTimeNow.tm_sec);
   multi_debug("date Day%i: Mon%i: Year%i Wday:%i YDay:%i\n",
-              now.tm_mday, now.tm_mon, now.tm_year, now.tm_wday, now.tm_yday);
+              multiTimeNow.tm_mday, multiTimeNow.tm_mon, multiTimeNow.tm_year,
+              multiTimeNow.tm_wday, multiTimeNow.tm_yday);
 
   // Hack the seconds over the hours if in seconds mode
   if ( modeNixieSecondsMode == true ) {
-    now.tm_hour = now.tm_sec; 
+    multiTimeNow.tm_hour = multiTimeNow.tm_sec; 
   }
   // Top left is the 1 in 12:34
-  mode_nixie_draw_single_digit(now.tm_hour / 10, NIXIE_DIGIT_TOPLEFT,
+  mode_nixie_draw_single_digit(multiTimeNow.tm_hour / 10, NIXIE_DIGIT_TOPLEFT,
                                  NIXIE_NO_DIGIT_DOT);
   // Top right is the 2 in 12:34
-  mode_nixie_draw_single_digit(now.tm_hour % 10, NIXIE_DIGIT_TOPRIGHT,
+  mode_nixie_draw_single_digit(multiTimeNow.tm_hour % 10, NIXIE_DIGIT_TOPRIGHT,
                                  NIXIE_NO_DIGIT_DOT);
   
   // Display the minutes always
 
   //Bottom left is the 3 in 12:34
-  mode_nixie_draw_single_digit(now.tm_min / 10, NIXIE_DIGIT_BOTTOMLEFT,
+  mode_nixie_draw_single_digit(multiTimeNow.tm_min / 10, NIXIE_DIGIT_BOTTOMLEFT,
                                NIXIE_NO_DIGIT_DOT);
   // Bottom right is the 4 in 12:34
-  mode_nixie_draw_single_digit(now.tm_min % 10, NIXIE_DIGIT_BOTTOMRIGHT, 
-                               now.tm_sec % 2);
+  mode_nixie_draw_single_digit(multiTimeNow.tm_min % 10, 
+                      NIXIE_DIGIT_BOTTOMRIGHT, multiTimeNow.tm_sec % 2);
 }
 

@@ -36,22 +36,20 @@ void mode_binary_display_led(int iXPos, int iYPos, bool iLit) {
 }
 
 void mode_binary_draw_watch_face() {
-  struct pulse_time_tm now;
-  pulse_get_time_date(&now);
-  multi_debug("hour %i min %i\n", now.tm_hour, now.tm_min);
+  multi_debug("hour %i min %i\n", multiTimeNow.tm_hour, multiTimeNow.tm_min);
 
   int i;
   for(i=0; i<6; i++) { // hours
-    mode_binary_display_led(i, 0, now.tm_hour % 2);
-    now.tm_hour=now.tm_hour / 2;
+    mode_binary_display_led(i, 0, multiTimeNow.tm_hour % 2);
+    multiTimeNow.tm_hour=multiTimeNow.tm_hour / 2;
   }
   for(i=0; i<6; i++) { // minutes
-    mode_binary_display_led(i, 1, now.tm_min % 2);
-    now.tm_min=now.tm_min / 2;
+    mode_binary_display_led(i, 1, multiTimeNow.tm_min % 2);
+    multiTimeNow.tm_min=multiTimeNow.tm_min / 2;
   }
   for(i=0; i<6; i++) { // seconds
-    mode_binary_display_led(i, 2, now.tm_sec % 2);
-    now.tm_sec=now.tm_sec / 2;
+    mode_binary_display_led(i, 2, multiTimeNow.tm_sec % 2);
+    multiTimeNow.tm_sec=multiTimeNow.tm_sec / 2;
   }
    
 }

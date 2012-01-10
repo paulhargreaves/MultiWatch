@@ -53,9 +53,7 @@ void mode_powerpoint_woken_by_button() {
   // Just woken up - display is blank
   modePowerpointBTWaitTimerID = -1; // timer to wait for bt response
 
-  struct pulse_time_tm now;
-  pulse_get_time_date(&now);
-  printf("   Time %02i:%02i\n", now.tm_hour, now.tm_min);
+  printf("   Time %02i:%02i\n", multiTimeNow.tm_hour, multiTimeNow.tm_min);
 
   // Have we just changed watch mode? If not, assume we are changing slide
   if ( modePowerpointJustChangedWatchMode == false ) {

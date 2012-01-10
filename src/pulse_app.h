@@ -86,6 +86,10 @@ bool multiMyWatchFaceCanHandleScreenOverwrites;
 bool multiYourWatchFaceWasOverwritten; 
 
 
+// This structure is populated automatically every time a multi_event fires
+// so should be reasonably accurate...
+struct pulse_time_tm multiTimeNow;  // you can change the data in your funcs
+
 // The capabilites that your watch could / should implement
 enum multi_function_table {
   COLDBOOT, // called on first boot of the watch

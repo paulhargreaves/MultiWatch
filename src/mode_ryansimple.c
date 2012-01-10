@@ -44,8 +44,6 @@ void mode_ryansimple_draw_spinning_time();
 uint8_t mode_ryansimple_current_min;
 uint8_t mode_ryansimple_current_hour;
 
-struct pulse_time_tm mode_ryansimple_current_time;
-
 static const color24_t mode_ryansimple_hand_color = {113, 217, 226, 0};
 static const color24_t mode_ryansimple_tick_color = {0, 123, 167, 0};
 
@@ -126,7 +124,6 @@ void mode_ryansimple_watch_functions(const enum multi_function_table iFunc, ...)
   multi_debug("enum %i\n", iFunc);
   //va_list varargs;
   //va_start(varargs, iFunc);
-  pulse_get_time_date(&mode_ryansimple_current_time); // just get the time
   switch (iFunc) {
     /*case MODEINIT:
       mode_ryansimple_current_min = 0;
@@ -292,8 +289,8 @@ void mode_ryansimple_draw_time()
     //pulse_cancel_timer(&sleep_timer);
     //pulse_get_time_date(&mode_ryansimple_current_time);
     mode_ryansimple_erase_hands();
-    mode_ryansimple_current_hour = mode_ryansimple_current_time.tm_hour;
-    mode_ryansimple_current_min = mode_ryansimple_current_time.tm_min;
+    mode_ryansimple_current_hour = multiTimeNow.tm_hour;
+    mode_ryansimple_current_min = multiTimeNow.tm_min;
     /*
     if(mode_ryansimple_current_hour != mode_ryansimple_current_time.tm_hour)
     {
@@ -316,8 +313,8 @@ void mode_ryansimple_draw_spinning_time()
 {
     mode_ryansimple_erase_hands();
     //pulse_get_time_date(&mode_ryansimple_current_time);
-    uint8_t temp_min = mode_ryansimple_current_time.tm_min;
-    uint8_t temp_hour = mode_ryansimple_current_time.tm_hour % 12;
+    uint8_t temp_min = multiTimeNow.tm_min;
+    uint8_t temp_hour = multiTimeNow.tm_hour % 12;
     mode_ryansimple_current_min = 0;
     mode_ryansimple_current_hour = 0;
     while(temp_min != mode_ryansimple_current_min || temp_hour != mode_ryansimple_current_hour)

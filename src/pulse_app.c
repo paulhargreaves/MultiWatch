@@ -271,6 +271,9 @@ void multi_change_watch_mode() {
   multiYourWatchFaceWasOverwritten = false;
   multiMyWatchFaceCanHandleScreenOverwrites = false;
 
+  // Get the current time
+  pulse_get_time_date(&multiTimeNow);
+
   // Now we change the mode
   multiSkipThisWatchMode = true; 
   while (multiSkipThisWatchMode) {
@@ -343,6 +346,9 @@ int32_t multi_register_timer(uint32_t iTimeoutMS,
 void multi_timer_fired(void *iData) {
   int id = (int)iData;
   multi_debug("multi_timer_fired %i\n", id);
+
+  // get the current time and date
+  pulse_get_time_date(&multiTimeNow);
 
   // Are we pausing the users timers? If so, just set it up again and
   // return. This must be kept in-step with multi_register_timer
