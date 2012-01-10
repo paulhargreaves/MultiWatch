@@ -271,7 +271,7 @@ void multi_change_watch_mode() {
   multiYourWatchFaceWasOverwritten = false;
   multiMyWatchFaceCanHandleScreenOverwrites = false;
 
-  // Get the current time
+  // Update the current time
   pulse_get_time_date(&multiTimeNow);
 
   // Now we change the mode
@@ -347,9 +347,6 @@ void multi_timer_fired(void *iData) {
   int id = (int)iData;
   multi_debug("multi_timer_fired %i\n", id);
 
-  // get the current time and date
-  pulse_get_time_date(&multiTimeNow);
-
   // Are we pausing the users timers? If so, just set it up again and
   // return. This must be kept in-step with multi_register_timer
   if (multiPauseAllTimers) {
@@ -423,7 +420,12 @@ void main_app_handle_button_up() {
 // No blocking calls are allowed in this function or else the watch will reset.
 // The inPulse watchdog timer will kick in after 5 seconds if a blocking
 // call is made.
-void main_app_loop() { }
+void main_app_loop() {
+  // get the current time and date
+  multi_debug("get date\n");
+  pulse_get_time_date(&multiTimeNow);
+}
+
 
 // This function is called whenever the processor is about to sleep (to conserve power)
 // The sleep functionality is scheduled with pulse_update_power_down_timer(uint32_t)
