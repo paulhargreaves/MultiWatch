@@ -23,6 +23,7 @@ void multi_vibe_off(void);
 void multi_change_brightness(void *);
 void multi_fake_function(void);
 void multi_tick_tock_loop(void);
+void multi_cancel_all_multi_timers(void);
 
 typedef struct {
   int32_t callbackID;
@@ -45,6 +46,7 @@ typedef struct {
 int multiCurrentWatchMode = -1; // first mode is 0, -1 will be incremented 
 int multiLastWatchMode; // used to see if button_up should be ignored
 int multiPowerDownTimeout; // how long do we want to powerdown for?
+bool multiPoweredDown = false; // are we powered down? Used by "sleep" modes, not true powerdown
 bool multiPauseAllTimers = false; // if true we are not passing users timer calls back until later
 int32_t multiPauseAllTimersTimerID = -1; // used to store the timer for pausing
 
@@ -250,10 +252,7 @@ void multi_change_watch_mode() {
   multi_debug("change-current timer says %i\n", multiButtonLongTimerID);
 
   // First we cancel all the outstanding timers
-  for (int i=0; i < MULTI_CALLBACK_STORAGE_SIZE; i++) {
-    pulse_cancel_timer(&multiTimerCallbackStore[i].callbackID); // pulse!
-    assert(multiTimerCallbackStore[i].callbackID == -1);
-  }
+  multi_cancel_all_multi_timers();
 
   // Turn off the vibe motor if running
   multi_vibe_off();
@@ -305,17 +304,23 @@ void multi_update_power_down_timer(uint32_t iScheduleSleepInMS) {
 
 // Register a timer. Stores the return value so we can cancel it when the
 // watch mode changes
+// There are various magic numbers in here.
+// Basic flow: we find an empty slot in our callback structure, then we
+//   register a timer and return an id back to the user. The id is calculated
+//   as the id slot * 100 + some random - so slot 5 should return ids between
+//   500 and 599 (or so).
+// The id number is later used in multi_cancel_timer as a way to ensure that
+// the person requesting the cancel didn't accidentally cancel someone elses
+// timer. E.g. if I gave call1 the ID of 500 and it fires, then we could
+// reuse that timer elsewhere. 
 int32_t multi_register_timer(uint32_t iTimeoutMS, 
                           PulseCallback iCallback, void *iData) {
   multi_debug("multi_register_timer for %i ms\n", iTimeoutMS);
 
-  // Do short timeouts work well?
-  //if (timeout_ms < 60) {  // Nice magic number... randomly picked
-  //  timeout_ms = 60;
-  //}
-
   int emptySlot = -1; // will contain the slot number
   for (int i = 0; i<MULTI_CALLBACK_STORAGE_SIZE && emptySlot == -1; i++) {
+     // Increment the magic variable that helps randomise the ID we return back
+     // to the calling function
      multiTimerIDVariable++;
      if (multiTimerIDVariable > 90) { // needs to be less than 99
        multiTimerIDVariable=0;
@@ -385,7 +390,7 @@ void multi_cancel_timer(int32_t *iTimerptr) {
 
   pulse_cancel_timer(&multiTimerCallbackStore[id].callbackID);
   assert(multiTimerCallbackStore[id].callbackID == -1);
-  *iTimerptr=multiTimerCallbackStore[id].callbackID; // set the user var
+  *iTimerptr = multiTimerCallbackStore[id].callbackID; // set the user var
   multiTimerCallbackStore[id].idGivenToCaller = 9999; // some invalid number
 }
   
@@ -427,9 +432,7 @@ void main_app_loop() {
 }
 
 
-// This function is called whenever the processor is about to sleep (to conserve power)
-// The sleep functionality is scheduled with pulse_update_power_down_timer(uint32_t)
-void main_app_handle_doz() { 
+void multi_cancel_all_multi_timers() {
   // Cancel all timers underneath them... 
   for (unsigned int i=0; i<MULTI_CALLBACK_STORAGE_SIZE; i++) {
     if ( multiTimerCallbackStore[i].callbackID != -1 ) {
@@ -438,6 +441,14 @@ void main_app_handle_doz() {
        multiTimerCallbackStore[i].idGivenToCaller = 99999;
     }
   }
+}
+
+// This function is called whenever the processor is about to sleep (to conserve power)
+// The sleep functionality is scheduled with pulse_update_power_down_timer(uint32_t)
+void main_app_handle_doz() { 
+  // Cancel all the users timers (and most of ours)...
+  multi_cancel_all_multi_timers();
+
   // hack the brightness down
   for(int i=MULTI_FADE_MAXIMUM_BRIGHTNESS;i>=MULTI_FADE_MINIMUM_BRIGHTNESS;
       i=i-MULTI_FADE_BRIGHTNESS_STEP) {
