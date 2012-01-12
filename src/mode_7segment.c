@@ -1,4 +1,4 @@
-// (C)2011 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
+// (C)2011-2012 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
 //
 // 7-Segment LCD display 
 // 

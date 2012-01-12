@@ -1,4 +1,4 @@
-// (C)2011 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
+// (C)2011-2012 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
 //
 // Hourly chime
 // Buzzes the watch every hour from 8:59am until 5:59pm on workdays. 

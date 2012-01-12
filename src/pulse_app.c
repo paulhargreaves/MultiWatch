@@ -1,5 +1,5 @@
 // Multi-watch engine
-// (C)2011 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
+// (C)2011-2012 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
 // 
 // Licensed under Creative Commons: Non-Commercial, Share-Alike, Attributation
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
@@ -11,8 +11,6 @@
 
 #include "pulse_app.h"
 #include "watch_config.h" // pull in the function call structures
-
-#include <assert.h>
 
 // Forward declarations
 void multi_woke_from_sleep_by_button(void);
@@ -46,8 +44,8 @@ typedef struct {
 int multiCurrentWatchMode = -1; // first mode is 0, -1 will be incremented 
 int multiLastWatchMode; // used to see if button_up should be ignored
 int multiPowerDownTimeout; // how long do we want to powerdown for?
-bool multiPoweredDown = false; // are we powered down? Used by "sleep" modes, not true powerdown
 bool multiPauseAllTimers = false; // if true we are not passing users timer calls back until later
+bool multiPoweredDown = false; // if true then some external sleep function is active
 int32_t multiPauseAllTimersTimerID = -1; // used to store the timer for pausing
 
 // Space for our timer callbacks
@@ -58,7 +56,6 @@ uint32_t multiMSAtButtonDown; // how long was button down for?
 int32_t multiButtonLongTimerID = -1; // used to store the long timeout
 int32_t multiVibeOnTimerID = -1; // used to store the vibe timeout
 int32_t multiTickTockTimerID = -1; // used to store the vibe timeout
-int multiCurrentBrightness;
 int multiTimerIDVariable = 0; // used to push out higher ids to catch bugs
 
 // This function is called once after the watch has booted up
@@ -71,6 +68,7 @@ void main_app_init() {
   }
 
   multiBluetoothIsConnected = false; // probably not connected immediately
+  multi_external_update_power_down_func = NULL; // no function
 
   // Call all the modes boot init functions
   for (unsigned int i=0; i<WATCH_MODES; i++) {
@@ -80,7 +78,6 @@ void main_app_init() {
   // Switch to the first mode
   multi_change_watch_mode();
 
-  //pulse_update_power_down_timer(MULTI_DEFAULT_POWERDOWN_TIME);
   pulse_register_callback(ACTION_WOKE_FROM_BUTTON, 
                           (PulseCallback) &multi_woke_from_sleep_by_button);
   pulse_register_callback(ACTION_HANDLE_NON_PULSE_PROTOCOL_BLUETOOTH_DATA,
@@ -88,6 +85,13 @@ void main_app_init() {
   multi_debug("*************** main init complete\n");
 }
 
+
+// Called by an external sleep func
+void multi_external_sleep_init(void) {
+  multi_cancel_all_multi_timers();
+  multiPoweredDown = true;
+  multiPauseAllTimers = true;
+}
 
 // Just woken up by the button? Call the watch face... will likely redraw
 void multi_woke_from_sleep_by_button() {
@@ -148,6 +152,14 @@ void multi_tick_tock_loop() {
 
 void main_app_handle_button_down() {
   multi_debug("main_app_handle_button_down[%i]\n", multiCurrentWatchMode);
+
+  // time to wake up from an external sleep function?
+  if (multiPoweredDown) {
+    multiPoweredDown = false; // ok.. we're back
+    multiPauseAllTimers = false; // allow other timers to work again
+    multi_woke_from_sleep_by_button(); // pretend we just woke up
+    return;
+  }
   
   if (multiPauseAllTimers) {
     multi_debug("ignoring button down as we are paused\n");
@@ -294,7 +306,11 @@ void multi_update_power_down_timer(uint32_t iScheduleSleepInMS) {
   multi_debug("multi_update_power_down_timer %i\n", iScheduleSleepInMS);
 
   multiPowerDownTimeout = iScheduleSleepInMS;
-  pulse_update_power_down_timer(multiPowerDownTimeout);
+  if (!multi_external_update_power_down_func) {
+    pulse_update_power_down_timer(multiPowerDownTimeout); // normal power timer
+  } else {
+    multi_external_update_power_down_func(multiPowerDownTimeout); // users func
+  }
 }
 
 // Register a timer. Stores the return value so we can cancel it when the

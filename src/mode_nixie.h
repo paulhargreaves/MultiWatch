@@ -1,5 +1,5 @@
 // mode_nixie.h
-// (C)2011 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
+// (C)2011-2012 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
 // 
 // Licensed under Creative Commons: Non-Commercial, Share-Alike, Attributation
 // http://creativecommons.org/licenses/by-nc-sa/3.0/

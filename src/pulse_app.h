@@ -1,5 +1,5 @@
 // pulse_app.h
-// (C)2011 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
+// (C)2011-2012 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
 // 
 // Licensed under Creative Commons: Non-Commercial, Share-Alike, Attributation
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
@@ -39,7 +39,24 @@ void multi_register_timer(int32_t *, uint32_t, PulseCallback, void *); // use in
 void multi_update_power_down_timer(uint32_t); // use instead of pulse_update_power_down_timer
 void multi_vibe_for_ms(uint32_t); // send time in ms, motor will come on and off automatically
 
+// Specialist things
+
 void multi_external_notification_handler_complete(void); // call only if you have a notifcation when your function has finished. This will allow the existing watch face to rebuild itself as it's likely you have overwritten it with an alert. See mode_notifcations.c for an example.
+
+// Set this in your COLDBOOT if you have decided to write your own power
+// handler. Setting this disables the code that automatically adjusts calls
+// the watches power down timer so your watch will never automatically
+// power down. This will be called frequently. Ideally you should just have
+// your own timer defined in here (pulse, not multi) and that should be reset
+// on each call so that the watch can do something sensible.
+// See mode_displaysleep.c for an example of usage.
+void (*multi_external_update_power_down_func)(int); // time in MS
+
+// call this from your sleep function when you are activating your sleep
+// function (e.g. pretending to power down)
+// This cancels all the existing timers for other watch faces
+void multi_external_sleep_init(void); 
+
 
 // This controls how quickly the loop function runs. You should change it in
 // your MODEINIT function if you feel that 200ms is not the right value for your

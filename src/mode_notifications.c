@@ -1,4 +1,4 @@
-// (C)2011 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
+// (C)2011-2012 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
 //
 // Notifications watch face
 // An example of hooking into the framework but not really using any of it.

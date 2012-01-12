@@ -9,6 +9,7 @@
 #include "mode_binary.h"
 #include "mode_ryansimple.h"
 #include "mode_notifications.h"
+#include "mode_displaysleep.h"
 
 // Then put in the number of modes, then add your handler function to the
 // table below
@@ -22,6 +23,7 @@
 void (* const multi_watch_functions[WATCH_MODES])(const enum multi_function_table func, ...) = { 
   //mode_hourlychime_watch_functions,
   //mode_ryansimple_watch_functions,
+  //mode_displaysleep_watch_functions,
   mode_binary_watch_functions,
   mode_nixie_watch_functions,
   mode_demo_watch_functions,
