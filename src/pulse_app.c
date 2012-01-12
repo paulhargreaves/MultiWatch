@@ -27,7 +27,7 @@ void multi_cancel_all_multi_timers(void);
 
 typedef struct {
   int32_t callbackID;
-  int32_t idGivenToCaller;
+  int32_t *userIDVariableLocation;
   PulseCallback userFunction;
   void *data;
 } multiTimerCallbackStruct;
@@ -97,7 +97,6 @@ void multi_woke_from_sleep_by_button() {
   multiButtonLongTimerID = -1; 
   multiVibeOnTimerID = -1;
   multiTickTockTimerID = -1;
-  multiFadeMaxBrightness = MULTI_FADE_MAXIMUM_BRIGHTNESS;
   assert(multiPauseAllTimers == false);
 
   // clear the canvas
@@ -125,7 +124,7 @@ void multi_woke_from_sleep_by_button() {
     }
   }
   */
-  pulse_oled_set_brightness(multiFadeMaxBrightness); // shouldn't be needed
+  pulse_oled_set_brightness(MULTI_FADE_MAXIMUM_BRIGHTNESS); 
 
   // Trigger the tick tock loop for the function
   multi_tick_tock_loop();
@@ -134,16 +133,15 @@ void multi_woke_from_sleep_by_button() {
 // Trigger this modes tick tock function if it exists and then
 // keep looping. If the mode doesn't need it then we won't keep looping.
 void multi_tick_tock_loop() {
-  multi_debug("multi_tick_tock_loop\n");
+  multi_debug("multi_tick_tock_loop. timems = %i\n", multiLoopTimeMS);
   if (multiLoopTimeMS) {
     multi_debug("calling the watch mode and re-registering\n");
     multi_watch_functions[multiCurrentWatchMode](MAINLOOP);
 
-    multi_cancel_timer(&multiTickTockTimerID);
-    assert(multiTickTockTimerID == -1);
-    multiTickTockTimerID = 
-        multi_register_timer(multiLoopTimeMS,
-                             (PulseCallback) &multi_tick_tock_loop, 0); 
+    multi_debug("tick tock id was %i\n", multiTickTockTimerID);
+    multi_register_timer(&multiTickTockTimerID, multiLoopTimeMS, 
+                         (PulseCallback) &multi_tick_tock_loop, 0); 
+    multi_debug("tick tock id %i\n", multiTickTockTimerID);
     assert(multiTickTockTimerID != -1);
   }
 }
@@ -157,12 +155,8 @@ void main_app_handle_button_down() {
   }
 
   multiMSAtButtonDown = pulse_get_millis(); // get the time in ms
-  multi_cancel_timer(&multiButtonLongTimerID); // might not be running...
-  assert(multiButtonLongTimerID == -1);
-
-  multiButtonLongTimerID =
-        multi_register_timer(multiModeChangePressTime,
-                            (PulseCallback) &multi_change_watch_mode, 0); 
+  multi_register_timer(&multiButtonLongTimerID, multiModeChangePressTime,
+                      (PulseCallback) &multi_change_watch_mode, 0); 
 
   // reset power down timer to whatever the user set
   multi_update_power_down_timer(multiPowerDownTimeout);
@@ -176,6 +170,7 @@ void main_app_handle_button_down() {
 void multi_vibe_for_ms(uint32_t iTimeToVibeForInMS) {
   multi_debug("multi_vibe_for_ms %i\n", iTimeToVibeForInMS);
 
+  /*
   // Cancel any vibe timer that may be running, leaving the motor on...
   multi_cancel_timer(&multiVibeOnTimerID);
   assert(multiVibeOnTimerID == -1);
@@ -187,11 +182,11 @@ void multi_vibe_for_ms(uint32_t iTimeToVibeForInMS) {
     pulse_vibe_off();
     return;
   }
+  */
 
   // Setup a timer to turn the vibe back off. 
-  multiVibeOnTimerID = 
-      multi_register_timer(iTimeToVibeForInMS,
-                           (PulseCallback) &multi_vibe_off, 0); 
+  multi_register_timer(&multiVibeOnTimerID, iTimeToVibeForInMS, 
+                       (PulseCallback) &multi_vibe_off, 0); 
   assert(multiVibeOnTimerID != -1);
 
   // Gentlemen, start your motors!
@@ -204,7 +199,7 @@ void multi_vibe_off() {
 
   pulse_vibe_off();
 
-  multi_cancel_timer(&multiVibeOnTimerID); // Cancel it
+  //multi_cancel_timer(&multiVibeOnTimerID); // Cancel it
   assert(multiVibeOnTimerID == -1); // Timer should be off now
 }
 
@@ -212,7 +207,7 @@ void multi_vibe_off() {
 void multi_notification_handler_pause_finished() {
   multi_debug("multi_notification_handler_pause_finished\n");
 
-  pulse_cancel_timer(&multiPauseAllTimersTimerID);
+  pulse_cancel_timer(&multiPauseAllTimersTimerID); // pulse
   assert(multiPauseAllTimersTimerID == -1);
   multi_update_power_down_timer(multiPowerDownTimeout); // keep powered up!
 
@@ -303,49 +298,49 @@ void multi_update_power_down_timer(uint32_t iScheduleSleepInMS) {
 }
 
 // Register a timer. Stores the return value so we can cancel it when the
-// watch mode changes
-// There are various magic numbers in here.
-// Basic flow: we find an empty slot in our callback structure, then we
-//   register a timer and return an id back to the user. The id is calculated
-//   as the id slot * 100 + some random - so slot 5 should return ids between
-//   500 and 599 (or so).
-// The id number is later used in multi_cancel_timer as a way to ensure that
-// the person requesting the cancel didn't accidentally cancel someone elses
-// timer. E.g. if I gave call1 the ID of 500 and it fires, then we could
-// reuse that timer elsewhere. 
-int32_t multi_register_timer(uint32_t iTimeoutMS, 
+// watch mode changes. Unlike pulse_register_timer this directly changes the
+// variable that the user passes in (like pulse_cancel_timer); NULL is not
+// valid.
+// DANGER: DANGER: When you use this function if you pass a variable location
+// that then goes away (e.g. declare a variable in a function, register the
+// timer, then return) then we will start randomly overwriting random locations
+// of memory. This is exactly the same as pulse_cancel_timer would have done
+// and generally you should use global variables for your timers rather than
+// local variables.
+// If you call this with timer already set then we will first cancel the
+// existing timer... so try to avoid re-using variables for multiple timers
+void multi_register_timer(int32_t *iUserLocationForID, uint32_t iTimeoutMS, 
                           PulseCallback iCallback, void *iData) {
-  multi_debug("multi_register_timer for %i ms\n", iTimeoutMS);
+  multi_debug("multi_register_timer %i for %i ms\n", iUserLocationForID, 
+              iTimeoutMS);
 
+  assert(iUserLocationForID); // no NULL passed in
+
+  // Cancel the existing timer if it was running
+  multi_cancel_timer(iUserLocationForID); 
+
+  // Find an empty slot
   int emptySlot = -1; // will contain the slot number
   for (int i = 0; i<MULTI_CALLBACK_STORAGE_SIZE && emptySlot == -1; i++) {
-     // Increment the magic variable that helps randomise the ID we return back
-     // to the calling function
-     multiTimerIDVariable++;
-     if (multiTimerIDVariable > 90) { // needs to be less than 99
-       multiTimerIDVariable=0;
-     }
      if ( multiTimerCallbackStore[i].callbackID == -1 ) {
        emptySlot = i;
        multiTimerCallbackStore[emptySlot].userFunction = iCallback;
        multiTimerCallbackStore[emptySlot].data = iData;
-       multiTimerCallbackStore[emptySlot].idGivenToCaller=(emptySlot * 100) +
-            multiTimerIDVariable; // 100!
+       multiTimerCallbackStore[emptySlot].userIDVariableLocation = 
+                                iUserLocationForID;
+       *iUserLocationForID = emptySlot; // tell the caller the slot number
        while (multiTimerCallbackStore[emptySlot].callbackID == -1) {
          multiTimerCallbackStore[emptySlot].callbackID =
                pulse_register_timer(iTimeoutMS,   // pulse!
                (PulseCallback) &multi_timer_fired, (void*)emptySlot);
        }
      }
-     multi_debug("call structure %i=%i, user %i\n", i,
-                 multiTimerCallbackStore[i].callbackID,
-                 multiTimerCallbackStore[i].idGivenToCaller);  
+     multi_debug("call structure %i=%i\n", i,
+                 multiTimerCallbackStore[i].callbackID);
   }
   multi_debug("callback watermark is at %i of %i\n", emptySlot, 
              MULTI_CALLBACK_STORAGE_SIZE-1);
   assert(emptySlot != -1);
-    
-  return multiTimerCallbackStore[emptySlot].idGivenToCaller; 
 }
 
 void multi_timer_fired(void *iData) {
@@ -356,7 +351,7 @@ void multi_timer_fired(void *iData) {
   // return. This must be kept in-step with multi_register_timer
   if (multiPauseAllTimers) {
     multi_debug("pause requested for this id. Recreating.\n");
-    pulse_cancel_timer(&multiTimerCallbackStore[id].callbackID);
+    pulse_cancel_timer(&multiTimerCallbackStore[id].callbackID); // pulse!
     multiTimerCallbackStore[id].callbackID =
                pulse_register_timer(500,   // pulse!  And we're waiting 500ms
                (PulseCallback) &multi_timer_fired, (void*)id);
@@ -365,33 +360,50 @@ void multi_timer_fired(void *iData) {
     return;
   }
 
+  // Cleanly cancel the users timer - note we still use the structure
+  // immediately afterwards. This is (relatatively) safe because the
+  // structure is not completely wiped in cancel_timer and we use it before
+  // any other calls are made so it will not have been touched. 
+  multi_cancel_timer(multiTimerCallbackStore[id].userIDVariableLocation); 
   // Fire the users function with the data value
   multiTimerCallbackStore[id].userFunction(multiTimerCallbackStore[id].data);
-  multi_debug("callback is now %i\n", multiTimerCallbackStore[id].callbackID);
+
+  // At this point the structure is in an unknown state as the call we just
+  // made could have reused it... so do not use anymore
 }
 
 void multi_cancel_timer(int32_t *iTimerptr) {
-  int userId=*iTimerptr;
-  multi_debug("multi_cancel_timer %i\n", userId);
+  multi_debug("multi_cancel_timer %i\n", iTimerptr);
+  
+  if((int)iTimerptr == -1) { return; }; 
+  assert(iTimerptr != 0);
 
+  int id=*iTimerptr;
+
+  multi_debug("id is %i = %i\n", iTimerptr, id);
   // No timer specified? Only should happen at first boot...
-  if(userId == -1) { return; }; 
+  if(id == -1) { return; }; 
 
+  /*
   int id=userId / 100; // 100 is magic - see multi_register_timer
   if (multiTimerCallbackStore[id].callbackID == -1) {
     *iTimerptr = -1; // set the user var
     return;
   }
-  multi_debug("cancelling timer for id %i user id was %i, should be %i\n", 
-              id, userId, multiTimerCallbackStore[id].idGivenToCaller);
+  */
+  multi_debug("cancelling timer for %i user id was %i\n", 
+              iTimerptr, id);
   assert(id>=0 && id <MULTI_CALLBACK_STORAGE_SIZE);
   assert(multiTimerCallbackStore[id].callbackID != -1);
-  assert(multiTimerCallbackStore[id].idGivenToCaller == userId);
 
   pulse_cancel_timer(&multiTimerCallbackStore[id].callbackID);
   assert(multiTimerCallbackStore[id].callbackID == -1);
   *iTimerptr = multiTimerCallbackStore[id].callbackID; // set the user var
-  multiTimerCallbackStore[id].idGivenToCaller = 9999; // some invalid number
+  // Do not clear anything else in the structure because it may be immediately
+  // used if it's part of the fire call. Otherwise we are finished with it.
+  // Do not expect there to be an issue with the structure being reused before
+  // it gets finally finished being used.
+  multi_debug("cancel complete\n");
 }
   
 
@@ -433,12 +445,9 @@ void main_app_loop() {
 
 
 void multi_cancel_all_multi_timers() {
-  // Cancel all timers underneath them... 
-  for (unsigned int i=0; i<MULTI_CALLBACK_STORAGE_SIZE; i++) {
-    if ( multiTimerCallbackStore[i].callbackID != -1 ) {
-       pulse_cancel_timer(&multiTimerCallbackStore[i].callbackID);
-       assert(multiTimerCallbackStore[i].callbackID == -1);
-       multiTimerCallbackStore[i].idGivenToCaller = 99999;
+  for (unsigned int id=0; id<MULTI_CALLBACK_STORAGE_SIZE; id++) {
+    if (multiTimerCallbackStore[id].userIDVariableLocation) {
+      multi_cancel_timer(multiTimerCallbackStore[id].userIDVariableLocation); 
     }
   }
 }

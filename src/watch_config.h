@@ -17,6 +17,8 @@
 
 // Strange error about excess elements? Check your WATCH_MODES above matches
 // number of entries in the multi_watch_functions
+// Random crashes may occur if you comment out functions but do not reduce
+// WATCH_MODES...
 void (* const multi_watch_functions[WATCH_MODES])(const enum multi_function_table func, ...) = { 
   //mode_hourlychime_watch_functions,
   //mode_ryansimple_watch_functions,

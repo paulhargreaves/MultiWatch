@@ -80,6 +80,7 @@ void mode_powerpoint_send_vibe_failed() {
     pulse_vibe_off();
     pulse_mdelay(MODE_POWERPOINT_VIBE_TIME * 3);
   }
+  modePowerpointBTCounter++;
 }
 
 void mode_powerpoint_button_pressed() {
@@ -93,11 +94,10 @@ void mode_powerpoint_button_pressed() {
 
   if (multiBluetoothIsConnected) {
     modePowerpointBTExpectValue = modePowerpointBTCounter;
-    multi_cancel_timer(&modePowerpointBTWaitTimerID);
-    assert(modePowerpointBTWaitTimerID == -1);
-    modePowerpointBTWaitTimerID = //  wait for bt response, then failed..
-         multi_register_timer(MODE_POWERPOINT_BT_WAIT_TIMEOUT,
+    multi_register_timer(&modePowerpointBTWaitTimerID, 
+         MODE_POWERPOINT_BT_WAIT_TIMEOUT,
          (PulseCallback) &mode_powerpoint_bt_failed, 0); 
+    assert(modePowerpointBTWaitTimerID != -1);
     
     assert(modePowerpointBTCounter >= MODE_POWERPOINT_BT_COUNTER_START);
     pulse_send_bluetooth_int(modePowerpointBTCounter); // send hello

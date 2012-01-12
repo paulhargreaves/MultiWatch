@@ -34,9 +34,9 @@ int dbg_printf(const char *format, ...);
 
 // Functions you should examine and call
 
-void multi_cancel_timer(int32_t *); // use instead of pulse_cancel_timer
+void multi_cancel_timer(int32_t *); // use instead of pulse_cancel_timer. You only need to call this if you have an outstanding timer - otherwise it is automatically called for you and your variable will automatically be set to -1 when it triggers
+void multi_register_timer(int32_t *, uint32_t, PulseCallback, void *); // use instead of pulse_register_timer. NOTE: the parameter list is slightly different - rather than giving a return code, pass in the variable as the first parameter just like multi_cancel_timer. See pulse_app.c for more info.
 void multi_update_power_down_timer(uint32_t); // use instead of pulse_update_power_down_timer
-int32_t multi_register_timer(uint32_t, PulseCallback, void *); // use instead of pulse_register_timer
 void multi_vibe_for_ms(uint32_t); // send time in ms, motor will come on and off automatically
 
 void multi_external_notification_handler_complete(void); // call only if you have a notifcation when your function has finished. This will allow the existing watch face to rebuild itself as it's likely you have overwritten it with an alert. See mode_notifcations.c for an example.
@@ -49,11 +49,6 @@ int multiLoopTimeMS;   // should be 200 by default
 // Use this to see if bluetooth is connected or not. Even if it is that doesn't
 // mean that it's usable
 bool multiBluetoothIsConnected; 
-
-// Change this to alter the max brightness for fade-up just after BUTTONWAKE.
-// You may want to do this if you want it to be dimmer at night?
-// Needs setting IN EACH MODE you want the brightness altered.
-int multiFadeMaxBrightness; 
 
 // Change to adjust the watch time changeover value from the default. If you
 // are writing a game you may want a much longer press before it changes, though
