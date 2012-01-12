@@ -107,8 +107,6 @@ void mode_displaysleep_update_power_down(int iPowerDownMS) {
   modeDisplaysleepPowerDownTimerID = pulse_register_timer(iPowerDownMS,
                    &mode_displaysleep_power_down, 0); // pulse
   assert(modeDisplaysleepPowerDownTimerID != -1);
-
-  
 }
 
 // The main init function

@@ -153,14 +153,6 @@ void multi_tick_tock_loop() {
 void main_app_handle_button_down() {
   multi_debug("main_app_handle_button_down[%i]\n", multiCurrentWatchMode);
 
-  // time to wake up from an external sleep function?
-  if (multiPoweredDown) {
-    multiPoweredDown = false; // ok.. we're back
-    multiPauseAllTimers = false; // allow other timers to work again
-    multi_woke_from_sleep_by_button(); // pretend we just woke up
-    return;
-  }
-  
   if (multiPauseAllTimers) {
     multi_debug("ignoring button down as we are paused\n");
     return;
@@ -426,6 +418,14 @@ void multi_cancel_timer(int32_t *iTimerptr) {
 void main_app_handle_button_up() {
   multi_debug("multi_app_handle_button_up[%i]\n", multiCurrentWatchMode);
 
+  // time to wake up from an external sleep function?
+  if (multiPoweredDown) {
+    multiPoweredDown = false; // ok.. we're back
+    multiPauseAllTimers = false; // allow other timers to work again
+    multi_woke_from_sleep_by_button(); // pretend we just woke up
+    return;
+  }
+  
   if (multiPauseAllTimers) {
     multi_debug("ignoring button up as we are paused\n");
     return;
