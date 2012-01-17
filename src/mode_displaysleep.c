@@ -1,6 +1,9 @@
 // (C)2011-2012 Paul Hargreaves (paul.hargreaves@technowizardry.co.uk)
 //
 // Display sleep
+//
+// NOTE: CURRENTLY THIS WATCHMODE WILL DRAIN YOUR WATCH BATTERY IN A FEW HOURS
+//       So compile in with caution...
 // 
 // Licensed under Creative Commons: Non-Commercial, Share-Alike, Attributation
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
