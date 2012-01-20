@@ -24,7 +24,7 @@
 void (* const multi_watch_functions[WATCH_MODES])(const enum multi_function_table func, ...) = { 
   //mode_hourlychime_watch_functions,
   //mode_ryansimple_watch_functions,
-  //mode_displaysleep_watch_functions, // caution!
+  //mode_displaysleep_watch_functions,
   mode_sleevepeek_watch_functions,
   mode_binary_watch_functions,
   mode_nixie_watch_functions,
@@ -32,7 +32,6 @@ void (* const multi_watch_functions[WATCH_MODES])(const enum multi_function_tabl
   mode_powerpoint_watch_functions,
   mode_7segment_watch_functions,
   mode_notifications_watch_functions,
-  NULL, // hopefully this crashes cleanly
 };
 
 // end
