@@ -71,13 +71,14 @@ void mode_hourlychime_set_next_alarm(void) {
     nextAlarm.hour = 8;
   }
   nextAlarm.min = 59;
+  //nextAlarm.min = (multiTimeNow.tm_min + 1) % 59; // - for testing
   // nextAlarm.snoozeMin = 0; // undefined
   // nextAlarm.durationMS = 0; // undefined
   nextAlarm.alert.type = 1;
   //nextAlarm.alert.vibe_intensity = 0; // undefined
   nextAlarm.alert.on1 = 25;
   nextAlarm.alert.off1 = 10;
-  nextAlarm.alert.on2 = 20;
+  nextAlarm.alert.on2 = 15;
   nextAlarm.alert.off2 = 5;
   nextAlarm.alert.on3 = 1;
   nextAlarm.alert.off3 = 1;
@@ -96,6 +97,21 @@ void mode_hourlychime_set_next_alarm(void) {
   #endif
 }
 
+// We were just woken by the alarm...
+void mode_hourlychime_woke_by_alarm(void) {
+  // Refresh the time since at this point the main_app_loop hasn't fired...
+  // sigh...
+  pulse_get_time_date(&multiTimeNow);
+
+  // Set the next alarm
+  mode_hourlychime_set_next_alarm();
+
+  // Go back to sleep... but need to wait for the alarm to finish since
+  // the pulse alarm code doesn't prevent powering off... and mdelay would
+  // be bad here as well...
+  multi_please_sleep_now(500);
+}
+
 void mode_hourlychime_watch_functions(const enum multi_function_table iFunc, ...) {
   multi_debug("enum %i\n", iFunc);
   //va_list varargs;
@@ -104,7 +120,7 @@ void mode_hourlychime_watch_functions(const enum multi_function_table iFunc, ...
     case COLDBOOT:
       // Here is where we set up this special watch mode
       pulse_register_callback(ACTION_ALARM_FIRING, 
-                              (PulseCallback) &mode_hourlychime_set_next_alarm);
+                              (PulseCallback) &mode_hourlychime_woke_by_alarm);
       #ifdef PULSE_SIMULATOR
       #include <stdlib.h>
       modeHourlychimeAlarm = malloc(sizeof(PulseAlarm));

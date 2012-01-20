@@ -305,6 +305,14 @@ void multi_update_power_down_timer(uint32_t iScheduleSleepInMS) {
   }
 }
 
+// Go to sleep almost immediately
+void multi_please_sleep_now(int iHowQuickly) {
+  int multiRealSleepTimeout;
+  multiRealSleepTimeout = multiPowerDownTimeout; 
+  multi_update_power_down_timer(iHowQuickly); 
+  multiPowerDownTimeout = multiRealSleepTimeout; // set the proper value back
+}
+
 // Register a timer. Stores the return value so we can cancel it when the
 // watch mode changes. Unlike pulse_register_timer this directly changes the
 // variable that the user passes in (like pulse_cancel_timer); NULL is not

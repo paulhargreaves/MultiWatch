@@ -58,6 +58,9 @@ void (*multi_external_update_power_down_func)(int); // time in MS
 void multi_external_sleep_init(void); 
 
 
+// Go to sleep immediately (well, almost...)
+void multi_please_sleep_now(int); // int is how long in ms, use 0 or 1 for immediate
+
 // This controls how quickly the loop function runs. You should change it in
 // your MODEINIT function if you feel that 200ms is not the right value for your
 // watch.
