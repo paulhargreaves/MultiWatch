@@ -64,11 +64,11 @@ void multi_please_sleep_now(int); // int is how long in ms, use 0 or 1 for immed
 // This controls how quickly the loop function runs. You should change it in
 // your MODEINIT function if you feel that 200ms is not the right value for your
 // watch.
-int multiLoopTimeMS;   // should be 200 by default
+int multiLoopTimeMS;   // is set to 200 by default in pulse_app.c
 
 // Use this to see if bluetooth is connected or not. Even if it is that doesn't
 // mean that it's usable
-bool multiBluetoothIsConnected; 
+bool multiBluetoothIsConnected;  // READ ONLY - do not set/change
 
 // Change to adjust the watch time changeover value from the default. If you
 // are writing a game you may want a much longer press before it changes, though
@@ -76,13 +76,13 @@ bool multiBluetoothIsConnected;
 // Remember that after 10 seconds or so the watch will watchdog reboot if the
 // user is holding it so you likely want to be quite a bit lower than that.
 // Do this in your INIT
-int multiModeChangePressTime;
+int multiModeChangePressTime; // Set in your MODEINIT if you need to change
 
 // Set to true in your MODEINIT function if you do not want this mode to be
 // active. This is only really used for modes that just set alarms or monitor
 // in the background via their own registered pulse_ timers, and should rarely
 // be needed in normal watch modes.
-bool multiSkipThisWatchMode;
+bool multiSkipThisWatchMode; // Set in your MODEINIT if you want it skipped
 
 // Set to true if your watch face is happy that screen writes from other
 // watch faces could occur. Normally you can leave this as-is (false) and the
@@ -91,20 +91,20 @@ bool multiSkipThisWatchMode;
 // you should monitor multiYourWatchFaceWasOverwritten in your main loop -
 // as soon as multiYourWatchFaceWasOverwritten becomes true then you know that
 // you need to blank the canvas and rebuild the normal users view.
-bool multiMyWatchFaceCanHandleScreenOverwrites;
+bool multiMyWatchFaceCanHandleScreenOverwrites; // Set in MODEINIT if needed
 
 // Additional note about multiYourWatchFaceWasOverwritten - if you are
 // monitoring this flag then whenever you have rebuilt your screen you should
 // set this flag to false as the framework will not do it. Also if you have
 // not set multiMyFaceCanHandleScreenOverwrites to true then you should
 // IGNORE this variable entirly.
-bool multiYourWatchFaceWasOverwritten; 
+bool multiYourWatchFaceWasOverwritten;
 
 
 // This structure is populated automatically frequently so should be
 // reasonably accurate... but is only available after MODEINIT in your watch
 // not at COLDBOOT
-struct pulse_time_tm multiTimeNow;  // you can change the data in your funcs
+struct pulse_time_tm multiTimeNow;  // you can change this data in your funcs
 
 // The capabilites that your watch could / should implement
 enum multi_function_table {
