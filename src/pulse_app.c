@@ -230,15 +230,14 @@ void multi_notification_handler_pause_finished() {
 // current face as if we had just changed to it with the button.
 void multi_external_notification_handler_complete() { 
   multi_debug("multi_external_notification_handler_complete\n");
-  multiPauseAllTimers = false;// Release existing timers
   multiYourWatchFaceWasOverwritten = true;
   assert(multiCurrentWatchMode != -1);
   multiPauseAllTimers = true;// Pause existing timers
   
-  // Create a 4 second delay
+  // Create a delay
   pulse_cancel_timer(&multiPauseAllTimersTimerID); // pulse
   assert(multiPauseAllTimersTimerID == -1);
-  multiPauseAllTimersTimerID = pulse_register_timer(4000, // pulse
+  multiPauseAllTimersTimerID = pulse_register_timer(7000, // pulse
     (PulseCallback) &multi_notification_handler_pause_finished, 0);
   assert(multiPauseAllTimersTimerID != -1);
   multi_debug("delay created id %i\n", multiPauseAllTimersTimerID);

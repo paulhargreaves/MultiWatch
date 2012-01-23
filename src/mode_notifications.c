@@ -23,6 +23,8 @@
 void mode_notifications_new_notification(PulseNotificationId id) {
   // Clear the screen - it's mine temporarily
   pulse_blank_canvas();
+
+  pulse_oled_set_brightness(100); // Max
  
   struct PulseNotification *notification = pulse_get_notification(id);
   printf("Type: ", notification->type);
