@@ -70,6 +70,9 @@ int multiLoopTimeMS;   // is set to 200 by default in pulse_app.c
 // mean that it's usable
 bool multiBluetoothIsConnected;  // READ ONLY - do not set/change
 
+// Use this to see if the watch is currently charging.
+bool multiBatteryCharging; // READ ONLY - do not set/change
+
 // Change to adjust the watch time changeover value from the default. If you
 // are writing a game you may want a much longer press before it changes, though
 // the end user may end up being confused if your mode is substantially longer.

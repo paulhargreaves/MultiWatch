@@ -71,8 +71,10 @@ void main_app_init() {
   multi_external_update_power_down_func = NULL; // no function
 
   // Call all the modes boot init functions
-  for (unsigned int i=0; i<WATCH_MODES; i++) {
-    multi_watch_functions[i](COLDBOOT);
+  int modes = 0;
+  while ( multi_watch_functions[modes] != NULL) {
+    multi_watch_functions[modes](COLDBOOT);
+    modes++;
   }
 
   // Switch to the first mode
@@ -277,7 +279,10 @@ void multi_change_watch_mode() {
     multiSkipThisWatchMode = false; // do not skip unless the mode wants it
 
     multiCurrentWatchMode++;
-    if (multiCurrentWatchMode >= WATCH_MODES ) {
+    multi_debug("Trying watch mode %i\n", multiCurrentWatchMode);
+    // NULL? Wrap back to first face
+    if (multi_watch_functions[multiCurrentWatchMode] == NULL ) {
+      multi_debug("Looping back to first watch mode\n");
       multiCurrentWatchMode = 0;
     }
 
@@ -498,6 +503,10 @@ void main_app_handle_hardware_update(enum PulseHardwareEvent iEvent) {
       multiBluetoothIsConnected = true; break;
     case BLUETOOTH_DISCONNECTED:
       multiBluetoothIsConnected = false; break;
+    case BATTERY_CHARGING:
+      multiBatteryCharging = true; break;
+    case BATTERY_NOT_CHARGING:
+      multiBatteryCharging = false; break;
     default: break; // make compiler happy
   }
 }

@@ -46,6 +46,8 @@ void mode_hourlychime_show_next_alarm(void) {
     }
     printf("\n");
   } // alarm is enabled
+  printf("\nBattery state: %i", multiBatteryCharging);
+  // No more space on the OLED
 }
 
 void mode_hourlychime_clear_alarm(void) {
