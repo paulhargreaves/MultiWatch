@@ -381,7 +381,7 @@ void multi_timer_fired(void *iData) {
   }
 
   // Cleanly cancel the users timer - note we still use the structure
-  // immediately afterwards. This is (relatatively) safe because the
+  // immediately afterwards. This is (relatively) safe because the
   // structure is not completely wiped in cancel_timer and we use it before
   // any other calls are made so it will not have been touched. 
   multi_cancel_timer(multiTimerCallbackStore[id].userIDVariableLocation); 
@@ -404,13 +404,6 @@ void multi_cancel_timer(int32_t *iTimerptr) {
   // No timer specified? Only should happen at first boot...
   if(id == -1) { return; }; 
 
-  /*
-  int id=userId / 100; // 100 is magic - see multi_register_timer
-  if (multiTimerCallbackStore[id].callbackID == -1) {
-    *iTimerptr = -1; // set the user var
-    return;
-  }
-  */
   multi_debug("cancelling timer for %i user id was %i\n", 
               iTimerptr, id);
   assert(id>=0 && id <MULTI_CALLBACK_STORAGE_SIZE);
@@ -420,9 +413,9 @@ void multi_cancel_timer(int32_t *iTimerptr) {
   assert(multiTimerCallbackStore[id].callbackID == -1);
   *iTimerptr = multiTimerCallbackStore[id].callbackID; // set the user var
   // Do not clear anything else in the structure because it may be immediately
-  // used if it's part of the fire call. Otherwise we are finished with it.
-  // Do not expect there to be an issue with the structure being reused before
-  // it gets finally finished being used.
+  // used if it's part of the multi_timer_fired. 
+  // It can, and will, be cleared/reused on the next call to
+  // multi_register_timer so no other function should consider the data safe.
   multi_debug("cancel complete\n");
 }
   
@@ -492,7 +485,7 @@ void main_app_handle_doz() {
     if (i >= MULTI_FADE_MINIMUM_BRIGHTNESS) {
       multi_debug("Bright %i\n", i);
       pulse_oled_set_brightness(i);
-      pulse_mdelay(MULTI_FADE_ADJUST_TIME_MS); // faster...
+      pulse_mdelay(MULTI_FADE_ADJUST_TIME_MS); 
     }
   }
 }
