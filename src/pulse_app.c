@@ -217,13 +217,14 @@ void multi_notification_handler_pause_finished() {
   assert(multiPauseAllTimersTimerID == -1);
   multi_update_power_down_timer(multiPowerDownTimeout); // keep powered up!
 
+  multiPauseAllTimers = false;// Release existing timers
+
   if ( !multiMyWatchFaceCanHandleScreenOverwrites ) {
     multi_debug("watch face cannot handle pause so resetting it\n");
     multiCurrentWatchMode--; // change_watch_mode increments back again
     multi_change_watch_mode();
   }
 
-  multiPauseAllTimers = false;// Release existing timers
 }
 
 // Externalised and used by notification apps 
