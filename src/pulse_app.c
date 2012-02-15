@@ -44,7 +44,8 @@ typedef struct {
 int multiCurrentWatchMode = -1; // first mode is 0, -1 will be incremented 
 int multiLastWatchMode; // used to see if button_up should be ignored
 int multiPowerDownTimeout; // how long do we want to powerdown for?
-bool multiPauseAllTimers = false; // if true we are not passing users timer calls back until later
+int multiPowerDownPausedTimeoutSave; // a copy of multiPowerDownTimeout if we are paused
+bool multiPauseAllTimers = false; // if true we are not passing users timer calls back until later - used for external notification pause
 bool multiPoweredDown = false; // if true then some external sleep function is active
 int32_t multiPauseAllTimersTimerID = -1; // used to store the timer for pausing
 
@@ -115,21 +116,6 @@ void multi_woke_from_sleep_by_button() {
   // set power down timer to whatever the user set
   multi_update_power_down_timer(multiPowerDownTimeout);
 
-  // disabled "nice" fading to recover bytes - so now we start dark and go
-  // bright after the watch face has had it's buttonwake called
-  /*
-  // Turn the brightness up
-  for(int i=MULTI_FADE_MINIMUM_BRIGHTNESS;i<=multiFadeMaxBrightness;
-      i=i+MULTI_FADE_BRIGHTNESS_STEP) {
-    if (i <= multiFadeMaxBrightness) {
-      multi_debug("Bright %i delay %i\n", i, MULTI_FADE_ADJUST_TIME_MS);
-      #ifndef PULSE_SIMULATOR
-      pulse_oled_set_brightness(i);
-      pulse_mdelay(MULTI_FADE_ADJUST_TIME_MS); // faster...
-      #endif
-    }
-  }
-  */
   pulse_oled_set_brightness(MULTI_FADE_MAXIMUM_BRIGHTNESS); 
 
   // Trigger the tick tock loop for the function
@@ -176,20 +162,6 @@ void main_app_handle_button_down() {
 void multi_vibe_for_ms(uint32_t iTimeToVibeForInMS) {
   multi_debug("multi_vibe_for_ms %i\n", iTimeToVibeForInMS);
 
-  /*
-  // Cancel any vibe timer that may be running, leaving the motor on...
-  multi_cancel_timer(&multiVibeOnTimerID);
-  assert(multiVibeOnTimerID == -1);
-
-  // short timer? just do it
-  if (iTimeToVibeForInMS <= 50) {
-    pulse_vibe_on();
-    pulse_mdelay(iTimeToVibeForInMS);
-    pulse_vibe_off();
-    return;
-  }
-  */
-
   // Setup a timer to turn the vibe back off. 
   multi_register_timer(&multiVibeOnTimerID, iTimeToVibeForInMS, 
                        (PulseCallback) &multi_vibe_off, 0); 
@@ -215,7 +187,8 @@ void multi_notification_handler_pause_finished() {
 
   pulse_cancel_timer(&multiPauseAllTimersTimerID); // pulse
   assert(multiPauseAllTimersTimerID == -1);
-  multi_update_power_down_timer(multiPowerDownTimeout); // keep powered up!
+  // Keep powered up, also set the time back to what it was before the event
+  multi_update_power_down_timer(multiPowerDownPausedTimeoutSave);
 
   multiPauseAllTimers = false;// Release existing timers
 
@@ -237,14 +210,16 @@ void multi_external_notification_handler_complete() {
   assert(multiCurrentWatchMode != -1);
   multiPauseAllTimers = true;// Pause existing timers
   
-  // Create a delay
+  // Create a delay - 14 seconds
+  #define PAUSE_TIMEOUT 14000
   pulse_cancel_timer(&multiPauseAllTimersTimerID); // pulse
   assert(multiPauseAllTimersTimerID == -1);
-  multiPauseAllTimersTimerID = pulse_register_timer(7000, // pulse
+  multiPauseAllTimersTimerID = pulse_register_timer(PAUSE_TIMEOUT, // pulse
     (PulseCallback) &multi_notification_handler_pause_finished, 0);
   assert(multiPauseAllTimersTimerID != -1);
   multi_debug("delay created id %i\n", multiPauseAllTimersTimerID);
-  multi_update_power_down_timer(multiPowerDownTimeout); // keep powered up!
+  multiPowerDownPausedTimeoutSave = multiPowerDownTimeout;
+  multi_update_power_down_timer(PAUSE_TIMEOUT+1000); // keep powered up
 }
   
 // Change to the next watch mode
@@ -432,10 +407,13 @@ void main_app_handle_button_up() {
     return;
   }
   
+  // Is someone cancelling the alert? If so, allow it to be cancelled
   if (multiPauseAllTimers) {
-    multi_debug("ignoring button up as we are paused\n");
+    multi_debug("ignoring button up but cancelling alert pause\n");
+    multi_notification_handler_pause_finished(); // 
     return;
   }
+
   multi_debug("multi_button_long_timer_id = %i\n", multiButtonLongTimerID);
   multi_cancel_timer(&multiButtonLongTimerID); // cancel pending mode change
   assert(multiButtonLongTimerID == -1);
