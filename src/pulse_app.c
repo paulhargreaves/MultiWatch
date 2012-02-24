@@ -70,6 +70,7 @@ void main_app_init() {
 
   multiBluetoothIsConnected = false; // probably not connected immediately
   multi_external_update_power_down_func = NULL; // no function
+  multi_external_main_app_loop_func = NULL;
 
   // Call all the modes boot init functions
   int modes = 0;
@@ -441,6 +442,12 @@ void main_app_loop() {
   // get the current time and date
   multi_debug("get date\n");
   pulse_get_time_date(&multiTimeNow);
+
+
+  // If the user has created their own main loop then call it
+  if (multi_external_main_app_loop_func) {
+    multi_external_main_app_loop_func(); // users func
+  }
 }
 
 

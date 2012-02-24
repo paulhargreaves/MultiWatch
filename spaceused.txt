@@ -1,11 +1,13 @@
-Flash bytes remaining with just the framework is  4407
-mode_notifications_watch_functions leaves  3923 so consumes 484 bytes
-mode_7segment_watch_functions leaves  3207 so consumes 1200 bytes
-mode_powerpoint_watch_functions leaves  3403 so consumes 1004 bytes
-mode_demo_watch_functions leaves  3859 so consumes 548 bytes
-mode_nixie_watch_functions leaves  3547 so consumes 860 bytes
-mode_binary_watch_functions leaves  4043 so consumes 364 bytes
-mode_sleevepeek_watch_functions leaves  3655 so consumes 752 bytes
-mode_displaysleep_watch_functions leaves  3543 so consumes 864 bytes
-mode_ryansimple_watch_functions leaves  2615 so consumes 1792 bytes
-mode_hourlychime_watch_functions leaves  3739 so consumes 668 bytes
+Flash bytes remaining with just the framework is  4299
+mode_notifications_watch_functions leaves  3883 so consumes 416 bytes
+mode_7segment_watch_functions leaves  3099 so consumes 1200 bytes
+mode_powerpoint_watch_functions leaves  3303 so consumes 996 bytes
+mode_demo_watch_functions leaves  3751 so consumes 548 bytes
+mode_nixie_watch_functions leaves  3447 so consumes 852 bytes
+mode_binary_watch_functions leaves  3943 so consumes 356 bytes
+mode_sleevepeek_watch_functions leaves  3547 so consumes 752 bytes
+mode_notify_history_watch_functions leaves  so consumes 4299 bytes
+mode_displaysleep_watch_functions leaves  3435 so consumes 864 bytes
+mode_ryansimple_watch_functions leaves  2507 so consumes 1792 bytes
+mode_hourlychime2_watch_functions leaves  4051 so consumes 248 bytes
+mode_hourlychime_watch_functions leaves  3639 so consumes 660 bytes

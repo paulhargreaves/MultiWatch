@@ -52,6 +52,12 @@ void multi_external_notification_handler_complete(void); // call only if you hav
 // See mode_displaysleep.c for an example of usage.
 void (*multi_external_update_power_down_func)(int); // time in MS
 
+// Set this in your COLDBOOT if you want to run an app while the watch is
+// "officially" powered off. See the standard main_app_loop for restrictions
+// ONLY one watchface can set it... you mostly should be using the multiwatch
+// MAINLOOP function instead
+void (*multi_external_main_app_loop_func)(void);
+
 // call this from your sleep function when you are activating your sleep
 // function (e.g. pretending to power down)
 // This cancels all the existing timers for other watch faces
