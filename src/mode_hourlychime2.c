@@ -45,17 +45,20 @@ void mode_hourlychime2_alarm_check(void) {
 
   // Is the time different? If so lets do something with it
   if ( modeHourlychime2NewTime != modeHourlychime2OldTime ) {
-    // Sociable hours?
-    if (multiTimeNow.tm_hour >= 8 && multiTimeNow.tm_hour <= 17) {
-      // Hourly chime?
-      if (multiTimeNow.tm_min == 59) {
-        mode_hourlychime2_alarm(true); // true == long alarm
-      }
-      // Quarterly chime?
-      if (multiTimeNow.tm_hour > 8 && multiTimeNow.tm_min > 0) {  
-        if ((multiTimeNow.tm_min / MODE_HOURLYCHIME2_SHORT_ALARM) *
-              MODE_HOURLYCHIME2_SHORT_ALARM == multiTimeNow.tm_min) {
-          mode_hourlychime2_alarm(false); // false == short alarm
+    // A day we want to chime?
+    if (multiTimeNow.tm_wday != 0 && multiTimeNow.tm_wday != 6) { // not sun/sat
+      // Sociable hours?
+      if (multiTimeNow.tm_hour >= 8 && multiTimeNow.tm_hour <= 17) {
+        // Hourly chime?
+        if (multiTimeNow.tm_min == 59) {
+          mode_hourlychime2_alarm(true); // true == long alarm
+        }
+        // Quarterly chime?
+        if (multiTimeNow.tm_hour > 8 && multiTimeNow.tm_min > 0) {  
+          if ((multiTimeNow.tm_min / MODE_HOURLYCHIME2_SHORT_ALARM) *
+                MODE_HOURLYCHIME2_SHORT_ALARM == multiTimeNow.tm_min) {
+            mode_hourlychime2_alarm(false); // false == short alarm
+          }
         }
       }
     }
