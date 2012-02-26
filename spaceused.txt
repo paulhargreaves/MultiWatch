@@ -9,5 +9,5 @@ mode_sleevepeek_watch_functions leaves  3547 so consumes 752 bytes
 mode_notify_history_watch_functions leaves  so consumes 4299 bytes
 mode_displaysleep_watch_functions leaves  3435 so consumes 864 bytes
 mode_ryansimple_watch_functions leaves  2507 so consumes 1792 bytes
-mode_hourlychime2_watch_functions leaves  4051 so consumes 248 bytes
+mode_hourlychime2_watch_functions leaves  4043 so consumes 256 bytes
 mode_hourlychime_watch_functions leaves  3639 so consumes 660 bytes
