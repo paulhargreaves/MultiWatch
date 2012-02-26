@@ -45,6 +45,9 @@ void mode_hourlychime2_alarm_check(void) {
 
   // Is the time different? If so lets do something with it
   if ( modeHourlychime2NewTime != modeHourlychime2OldTime ) {
+    // Store the current time
+    modeHourlychime2OldTime = modeHourlychime2NewTime;
+
     // A day we want to chime?
     if (multiTimeNow.tm_wday != 0 && multiTimeNow.tm_wday != 6) { // not sun/sat
       // Sociable hours?
@@ -64,8 +67,6 @@ void mode_hourlychime2_alarm_check(void) {
     }
   }
 
-  // Remember the current time
-  modeHourlychime2OldTime = modeHourlychime2NewTime;
 }
 
 void mode_hourlychime2_watch_functions(const enum multi_function_table iFunc, ...) {
@@ -75,6 +76,7 @@ void mode_hourlychime2_watch_functions(const enum multi_function_table iFunc, ..
   switch (iFunc) {
     case COLDBOOT:
       // Here is where we set up this special watch mode
+      assert(multi_external_main_app_loop_func == NULL); // safety check 
       multi_external_main_app_loop_func = &mode_hourlychime2_alarm_check;
       break;
     case MODEINIT:
