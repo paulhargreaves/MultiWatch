@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #define null_func 0
 
@@ -86,6 +87,7 @@ bool multiBatteryCharging; // READ ONLY - do not set/change
 // user is holding it so you likely want to be quite a bit lower than that.
 // Do this in your INIT
 int multiModeChangePressTime; // Set in your MODEINIT if you need to change
+#define MULTI_MODE_CHANGE_PRESS_TIME_DEFAULT 1400  // 1.4 secs
 
 // Set to true in your MODEINIT function if you do not want this mode to be
 // active. This is only really used for modes that just set alarms or monitor

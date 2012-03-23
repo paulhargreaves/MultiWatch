@@ -33,8 +33,6 @@ typedef struct {
 // Defines for defaults that we are not hard hardcoding
 #define MULTI_CALLBACK_STORAGE_SIZE 10 // how many callbacks can we store
 #define MULTI_DEFAULT_POWERDOWN_TIME (10 * 1000) // in milliseconds
-//#define MULTI_MODE_CHANGE_PRESS_TIME (2 * 1000) // in milliseconds
-#define MULTI_MODE_CHANGE_PRESS_TIME 1400 // in milliseconds 1.4 secs
 
 #define MULTI_FADE_MINIMUM_BRIGHTNESS 0
 #define MULTI_FADE_MAXIMUM_BRIGHTNESS 100
@@ -244,7 +242,7 @@ void multi_change_watch_mode() {
   multi_update_power_down_timer(MULTI_DEFAULT_POWERDOWN_TIME);
 
   multiLoopTimeMS = 200; // how long we normally loop a watch for, 200ms
-  multiModeChangePressTime = MULTI_MODE_CHANGE_PRESS_TIME;
+  multiModeChangePressTime = MULTI_MODE_CHANGE_PRESS_TIME_DEFAULT;
   multiYourWatchFaceWasOverwritten = false;
   multiMyWatchFaceCanHandleScreenOverwrites = false;
 
