@@ -28,7 +28,7 @@ void (* const multi_watch_functions[])(const enum multi_function_table func, ...
   mode_nixie_watch_functions,
 //  mode_demo_watch_functions,
   mode_powerpoint_watch_functions,
-  mode_7segment_watch_functions,
+//  mode_7segment_watch_functions,
 //  mode_notifications_watch_functions,
   mode_starkiller_watch_functions,
   NULL // MUST BE LAST ENTRY
