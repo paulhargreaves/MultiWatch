@@ -40,6 +40,10 @@ void multi_register_timer(int32_t *, uint32_t, PulseCallback, void *); // use in
 void multi_update_power_down_timer(uint32_t); // use instead of pulse_update_power_down_timer
 void multi_vibe_for_ms(uint32_t); // send time in ms, motor will come on and off automatically
 
+// Draws a box of the requested colour. Is safe to call with width/height that
+// go off the edge of the screen as long as x/y are on the screen
+void multi_draw_box(int x, int y, int width, int height, color24_t colour);
+
 // Specialist things
 
 void multi_external_notification_handler_complete(void); // call only if you have a notifcation when your function has finished. This will allow the existing watch face to rebuild itself as it's likely you have overwritten it with an alert. See mode_notifcations.c for an example.

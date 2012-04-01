@@ -26,7 +26,7 @@ int modeHourlychime2NewTime = -1;
 void mode_hourlychime2_alarm(bool longAlarm) {
   // Short alarm first, always
   pulse_vibe_on();
-  pulse_mdelay(150);
+  pulse_mdelay(200);
   pulse_vibe_off();
 
   // Long alarm if we need one

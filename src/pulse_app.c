@@ -48,6 +48,8 @@ bool multiPauseAllTimers = false; // if true we are not passing users timer call
 bool multiPoweredDown = false; // if true then some external sleep function is active
 int32_t multiPauseAllTimersTimerID = -1; // used to store the timer for pausing
 
+void main_app_init();
+
 // Space for our timer callbacks
 multiTimerCallbackStruct 
        multiTimerCallbackStore[MULTI_CALLBACK_STORAGE_SIZE]; 
@@ -128,7 +130,7 @@ void multi_tick_tock_loop() {
   multi_debug("multi_tick_tock_loop. timems = %i\n", multiLoopTimeMS);
   if (multiLoopTimeMS) {
     multi_debug("calling the watch mode and re-registering\n");
-    multi_watch_functions[multiCurrentWatchMode](MAINLOOP);
+    multi_watch_functions[multiCurrentWatchMode](MAINLOOP); // call user func
 
     multi_debug("tick tock id was %i\n", multiTickTockTimerID);
     multi_register_timer(&multiTickTockTimerID, multiLoopTimeMS, 
@@ -140,7 +142,6 @@ void multi_tick_tock_loop() {
 
 void main_app_handle_button_down() {
   multi_debug("main_app_handle_button_down[%i]\n", multiCurrentWatchMode);
-
   if (multiPauseAllTimers) {
     multi_debug("ignoring button down as we are paused\n");
     return;
@@ -371,7 +372,7 @@ void multi_timer_fired(void *iData) {
 void multi_cancel_timer(int32_t *iTimerptr) {
   multi_debug("multi_cancel_timer %i\n", iTimerptr);
   
-  if((int)iTimerptr == -1) { return; }; 
+  if((int)iTimerptr == -1) { return; };  // no need to cancel
   assert(iTimerptr != 0);
 
   int id=*iTimerptr;
@@ -442,7 +443,6 @@ void main_app_loop() {
   multi_debug("get date\n");
   pulse_get_time_date(&multiTimeNow);
 
-
   // If the user has created their own main loop then call it
   if (multi_external_main_app_loop_func) {
     multi_external_main_app_loop_func(); // users func
@@ -451,6 +451,7 @@ void main_app_loop() {
 
 
 void multi_cancel_all_multi_timers() {
+
   for (unsigned int id=0; id<MULTI_CALLBACK_STORAGE_SIZE; id++) {
     if (multiTimerCallbackStore[id].userIDVariableLocation) {
       multi_cancel_timer(multiTimerCallbackStore[id].userIDVariableLocation); 
@@ -491,8 +492,30 @@ void main_app_handle_hardware_update(enum PulseHardwareEvent iEvent) {
 
 // Handles bluetooth messages
 void multi_received_bluetooth_data(const uint8_t *iBuffer) {
-    multi_watch_functions[multiCurrentWatchMode](BLUETOOTHREC, iBuffer);
+  multi_watch_functions[multiCurrentWatchMode](BLUETOOTHREC, iBuffer);
 }
 
+
+// Until one goes into pulse_*, may as well have a common one apps can use
+// pulse_set_draw
+void multi_draw_box(int x, int y, int width, int height, color24_t colour) {
+  // Work out the x2 co-ordinate, stopping at the edge of the screen
+  int x2 = x + width;
+  if (x2 > SCREEN_WIDTH - 1) {
+    x2 = SCREEN_WIDTH - 1;
+  } 
+
+  // Work out the y2 co-ordinate, stopping at the bottom of the screen
+  int y2 = y + height;
+  if (y2 > SCREEN_HEIGHT - 1) {
+    y2 = SCREEN_HEIGHT - 1;
+  }
+
+  // Set the window and draw the pixels
+  pulse_set_draw_window(x,y,x2,y2);
+  for(int i=0; i<width*height; i++) {
+    pulse_draw_point24(colour);
+  }
+}
 
 // END
