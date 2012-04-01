@@ -121,7 +121,7 @@ void mode_starkiller_game_over() {
 void mode_starkiller_move_enemies() {
   for (int i = 0; i < MODE_STARKILLER_ENEMY_COUNT; i++) {
     if (modeStarkillerEnemyY[i] != 0) {
-      int direction = rand()%2;
+      int direction = multi_rand()%2;
       if (direction == 0) {
         direction = -1;
       }
@@ -139,24 +139,31 @@ void mode_starkiller_move_enemies() {
   }
 }
 
+/*
 void mode_starkiller_draw_bullet(int x, int y, color24_t color) {
   pulse_set_draw_window(x, y, x, y);
   pulse_draw_point24(color);
 }
+*/
 
 void mode_starkiller_move_player_bullets() {
   for (int i = 0; i < MODE_STARKILLER_BULLET_COUNT; i++) {
-    mode_starkiller_draw_bullet(modeStarkillerBulletX[i],
-                                modeStarkillerBulletY[i], COLOR_BLACK24);
+    multi_draw_box(modeStarkillerBulletX[i], modeStarkillerBulletY[i], 0, 0,  
+                   COLOR_BLACK24);
+//    mode_starkiller_draw_bullet(modeStarkillerBulletX[i],
+//                                modeStarkillerBulletY[i], COLOR_BLACK24);
     // Move the bullet
     if (modeStarkillerBulletY[i] != 0) { 
       modeStarkillerBulletY[i]--;
     }
     // Has it hit the enemy?
     if (modeStarkillerBulletY[i] != 0) {
-      mode_starkiller_draw_bullet(modeStarkillerBulletX[i], 
-                     modeStarkillerBulletY[i], mode_starkiller_color_blue);
+      multi_draw_box(modeStarkillerBulletX[i], modeStarkillerBulletY[i], 0, 0,
+                     mode_starkiller_color_blue);
+      //mode_starkiller_draw_bullet(modeStarkillerBulletX[i], 
+      //               modeStarkillerBulletY[i], mode_starkiller_color_blue);
       for (int j = 0; j < MODE_STARKILLER_ENEMY_COUNT; j++) {
+/*
         if ((modeStarkillerBulletX[i] > modeStarkillerEnemyX[j]) && 
                (modeStarkillerBulletX[i] < modeStarkillerEnemyX[j]+
                             MODE_STARKILLER_ENEMY_SIZE) && 
@@ -164,6 +171,13 @@ void mode_starkiller_move_player_bullets() {
                (modeStarkillerBulletY[i] < modeStarkillerEnemyY[j]+
                             MODE_STARKILLER_ENEMY_SIZE) &&
                modeStarkillerEnemyY[j] != 0) {
+*/
+        if (modeStarkillerEnemyY[j] != 0 && 
+            multi_boxes_overlap(modeStarkillerBulletX[i],
+              modeStarkillerBulletY[i], 0, 0,
+              modeStarkillerEnemyX[j],
+              modeStarkillerEnemyY[j], MODE_STARKILLER_ENEMY_SIZE,
+              MODE_STARKILLER_ENEMY_SIZE-1)) {
           multi_debug("HIT!\n");
           pulse_draw_image(IMAGE_MODE_STARKILLER_BLANK_INVADER,
                            modeStarkillerEnemyX[j]-1, modeStarkillerEnemyY[j]);
@@ -187,20 +201,30 @@ void mode_starkiller_move_player_bullets() {
 
 void mode_starkiller_move_enemy_bullets() {
   for (int i = 0; i < MODE_STARKILLER_BULLET_COUNT; i++) {
-    mode_starkiller_draw_bullet(modeStarkillerEnemyBulletX[i], 
-                             modeStarkillerEnemyBulletY[i], COLOR_BLACK24);
+    //                         modeStarkillerEnemyBulletY[i], COLOR_BLACK24);
     if (modeStarkillerEnemyBulletY[i] < SCREEN_HEIGHT) {
+      multi_draw_box(modeStarkillerEnemyBulletX[i], 
+               modeStarkillerEnemyBulletY[i], 0, 0, COLOR_BLACK24);
+    //mode_starkiller_draw_bullet(modeStarkillerEnemyBulletX[i], 
       modeStarkillerEnemyBulletY[i]++;
     }
     if (modeStarkillerEnemyBulletY[i] < SCREEN_HEIGHT) {
-      mode_starkiller_draw_bullet(modeStarkillerEnemyBulletX[i],
-                modeStarkillerEnemyBulletY[i], mode_starkiller_color_red);
+      multi_draw_box(modeStarkillerEnemyBulletX[i], 
+                modeStarkillerEnemyBulletY[i], 0, 0, mode_starkiller_color_red);
+      //mode_starkiller_draw_bullet(modeStarkillerEnemyBulletX[i],
+      //          modeStarkillerEnemyBulletY[i], mode_starkiller_color_red);
+/*
       if ((modeStarkillerEnemyBulletX[i] > modeStarkillerBallX) &&
                (modeStarkillerEnemyBulletX[i] < modeStarkillerBallX +
                      MODE_STARKILLER_BALL_SIZE) &&
                (modeStarkillerEnemyBulletY[i] > modeStarkillerBallY) &&
                (modeStarkillerEnemyBulletY[i] < modeStarkillerBallY +
                      MODE_STARKILLER_BALL_SIZE)) {
+*/
+      if (multi_boxes_overlap(modeStarkillerEnemyBulletX[i],
+              modeStarkillerEnemyBulletY[i], 0, 0, 
+              modeStarkillerBallX, modeStarkillerBallY, 
+              MODE_STARKILLER_BALL_SIZE, MODE_STARKILLER_BALL_SIZE)) {
         mode_starkiller_game_over();
         return; // do not bother with remaining bullets
       }
@@ -212,7 +236,7 @@ void mode_starkiller_move_enemy_bullets() {
 void mode_starkiller_fire_bullets() {
   if ( modeStarkillerEnemiesAlive ) {
     // PLAYER
-    if ((rand() % 3)) { 
+    if ((multi_rand() % 3)) { 
       for (int i = 0; i < MODE_STARKILLER_BULLET_COUNT; i++) {
         if (modeStarkillerBulletY[i] == 0) {
           modeStarkillerBulletX[i] = modeStarkillerBallX + 2;
@@ -226,7 +250,7 @@ void mode_starkiller_fire_bullets() {
     for (int i = 0; i < MODE_STARKILLER_BULLET_COUNT; i++) {
       if (modeStarkillerEnemyBulletY[i] >= SCREEN_HEIGHT) {
         // We look for an available enemy 
-        int j = rand() % MODE_STARKILLER_ENEMY_COUNT;
+        int j = multi_rand() % MODE_STARKILLER_ENEMY_COUNT;
         if (modeStarkillerEnemyY[j] == 0) { continue; } // not alive;try again
 
         modeStarkillerEnemyBulletX[i] = modeStarkillerEnemyX[j] + 3;
@@ -297,6 +321,7 @@ void mode_starkiller_watch_functions(const enum multi_function_table iFunc,
       mode_starkiller_watch_functions(BUTTONDOWN);
       break;
     case MAINLOOP:
+      multi_rand(); // keep the random number randomizing..
       if (modeStarkillerPlaying) {
         mode_starkiller_main_app_loop();
       }

@@ -17,7 +17,7 @@ void multi_woke_from_sleep_by_button(void);
 void multi_change_watch_mode(void);
 void multi_timer_fired(void *);
 void multi_received_bluetooth_data(const uint8_t *);
-void multi_vibe_off(void);
+//void multi_vibe_off(void);
 void multi_change_brightness(void *);
 void multi_fake_function(void);
 void multi_tick_tock_loop(void);
@@ -165,7 +165,8 @@ void multi_vibe_for_ms(uint32_t iTimeToVibeForInMS) {
 
   // Setup a timer to turn the vibe back off. 
   multi_register_timer(&multiVibeOnTimerID, iTimeToVibeForInMS, 
-                       (PulseCallback) &multi_vibe_off, 0); 
+                       (PulseCallback) &pulse_vibe_off, 0); 
+                       //(PulseCallback) &multi_vibe_off, 0); 
   assert(multiVibeOnTimerID != -1);
 
   // Gentlemen, start your motors!
@@ -173,6 +174,7 @@ void multi_vibe_for_ms(uint32_t iTimeToVibeForInMS) {
 }
   
 // Turns off the motor, called only via multi_vibe_for_ms
+/*
 void multi_vibe_off() {
   multi_debug("multi_vibe_off()\n");
 
@@ -181,6 +183,7 @@ void multi_vibe_off() {
   //multi_cancel_timer(&multiVibeOnTimerID); // Cancel it
   assert(multiVibeOnTimerID == -1); // Timer should be off now
 }
+*/
 
 
 void multi_notification_handler_pause_finished() {
@@ -232,7 +235,8 @@ void multi_change_watch_mode() {
   multi_cancel_all_multi_timers();
 
   // Turn off the vibe motor if running
-  multi_vibe_off();
+  //multi_vibe_off();
+  pulse_vibe_off();
 
   // Remember what the last mode was, for button_up so it can ignore first press
   if (!multiPauseAllTimers) { // but not if we were just pausing...
@@ -497,25 +501,59 @@ void multi_received_bluetooth_data(const uint8_t *iBuffer) {
 
 
 // Until one goes into pulse_*, may as well have a common one apps can use
-// pulse_set_draw
 void multi_draw_box(int x, int y, int width, int height, color24_t colour) {
   // Work out the x2 co-ordinate, stopping at the edge of the screen
   int x2 = x + width;
-  if (x2 > SCREEN_WIDTH - 1) {
+  if (x2 >= SCREEN_WIDTH) {
     x2 = SCREEN_WIDTH - 1;
   } 
 
   // Work out the y2 co-ordinate, stopping at the bottom of the screen
   int y2 = y + height;
-  if (y2 > SCREEN_HEIGHT - 1) {
+  if (y2 >= SCREEN_HEIGHT) {
     y2 = SCREEN_HEIGHT - 1;
   }
 
+  // Bail if the positions are off screen
+  if (y < 0 || y >= SCREEN_HEIGHT || x < 0 || x >= SCREEN_WIDTH) {
+    multi_debug("Not drawing (%i, %i)\n", x, y);
+    return;
+  }
+
+  assert(y < SCREEN_HEIGHT);
+  assert(y >= 0);
+  assert(y2 < SCREEN_HEIGHT);
+  assert(y2 >= 0);
+  assert(x < SCREEN_WIDTH);
+  assert(x2 < SCREEN_WIDTH);
+  assert(x >= 0);
+  assert(x2 >= 0);
+  assert(height >= 0);
+  assert(width >= 0);
+  assert(x2 >= x);
+  assert(y2 >= y);
+  //multi_debug("draw (%i, %i) to (%i, %i) color %i\n", x, y, x2, y2, colour);
+
   // Set the window and draw the pixels
   pulse_set_draw_window(x,y,x2,y2);
-  for(int i=0; i<width*height; i++) {
+
+  for(int i=0; i<(width+1)*(height+1); i++) {
     pulse_draw_point24(colour);
   }
 }
+
+// xor128 function from http://en.wikipedia.org/wiki/Xorshift
+uint32_t multi_rand(void) {
+  static uint32_t x = 123456789;
+  static uint32_t y = 362436069;
+  static uint32_t z = 521288629;
+  static uint32_t w = 88675123;
+  uint32_t t;
+
+  t = x ^ (x << 11);
+  x = y; y = z; z = w;
+  return w = w ^ (w >> 19) ^ (t ^ (t >> 8));
+}
+
 
 // END

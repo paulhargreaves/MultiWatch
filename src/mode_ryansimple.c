@@ -146,10 +146,12 @@ void mode_ryansimple_watch_functions(const enum multi_function_table iFunc, ...)
 void mode_ryansimple_draw_wu_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, color24_t color)
 {
     //Draw 2 endpoints
-    pulse_set_draw_window(x0, y0, x0, y0);
-    pulse_draw_point24(color);
-    pulse_set_draw_window(x1, y1, x1, y1);
-    pulse_draw_point24(color);
+//    multi_draw_box(x0, y0, 0, 0, color);
+//    multi_draw_box(x1, y1, 0, 0, color);
+    //pulse_set_draw_window(x0, y0, x0, y0);
+    //pulse_draw_point24(color);
+    //pulse_set_draw_window(x1, y1, x1, y1);
+    //pulse_draw_point24(color);
 
     //Negative slope
     bool negative = (y0 > y1) ? true : false;
@@ -168,19 +170,25 @@ void mode_ryansimple_draw_wu_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1
 
     if(!dx) //Vertical line
     {
+        multi_draw_box(x0, y0, 0, dy, color);
+/*
         pulse_set_draw_window(x0, y0 + 1, x0, y1 - 1);
         for(int i = 1; i < dy; i++)
         {
             pulse_draw_point24(color);
         }
+*/
     }
     else if(!dy) //Horizontal line
     {
+        multi_draw_box(x0, y0, dx, 0, color);
+/*
         pulse_set_draw_window(x0 + 1, y0, x1 - 1, y0);
         for(int i = 1; i < dx; i++)
         {
             pulse_draw_point24(color);
         }
+*/
     }
     else if(dx == dy) //45 degree line
     {
@@ -190,8 +198,9 @@ void mode_ryansimple_draw_wu_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1
         {
             x0++;
             y += dy;
-            pulse_set_draw_window(x0, y, x0, y);
-            pulse_draw_point24(color);
+            multi_draw_box(x0, y, 0, 0, color);
+//            pulse_set_draw_window(x0, y, x0, y);
+//            pulse_draw_point24(color);
         }
     }
     else //Other line
@@ -257,15 +266,27 @@ void mode_ryansimple_draw_wu_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1
                 mode_ryansimple_swap(&da, &db);
             }
 
+            color24_t adjustTildeD = mode_ryansimple_adjustintensity(color, ~D);
+            color24_t adjustD      = mode_ryansimple_adjustintensity(color, D);
             //Draw 4 points
+            multi_draw_box(a0, b0, 0, 0, adjustTildeD);
+//                           mode_ryansimple_adjustintensity(color, ~D));
+/*
             pulse_set_draw_window(a0, b0, a0, b0);
             pulse_draw_point24(mode_ryansimple_adjustintensity(color, ~D));
-            pulse_set_draw_window(a0 + da, b0 + db, a0 + da, b0 + db);
-            pulse_draw_point24(mode_ryansimple_adjustintensity(color, D));
-            pulse_set_draw_window(a1, b1, a1, b1);
-            pulse_draw_point24(mode_ryansimple_adjustintensity(color, ~D));
-            pulse_set_draw_window(a1 - da, b1 - db, a1 - da, b1 - db);
-            pulse_draw_point24(mode_ryansimple_adjustintensity(color, D));
+*/
+            multi_draw_box(a0 + da, b0 + db, 0, 0, adjustD);
+//                           mode_ryansimple_adjustintensity(color, D));
+//            pulse_set_draw_window(a0 + da, b0 + db, a0 + da, b0 + db);
+//            pulse_draw_point24(mode_ryansimple_adjustintensity(color, D));
+            multi_draw_box(a1, b1, 0, 0, adjustTildeD);
+//                           mode_ryansimple_adjustintensity(color, ~D));
+//            pulse_set_draw_window(a1, b1, a1, b1);
+//            pulse_draw_point24(mode_ryansimple_adjustintensity(color, ~D));
+            multi_draw_box(a1 - da, b1 - db, 0, 0, adjustD);
+//                           mode_ryansimple_adjustintensity(color, D));
+//            pulse_set_draw_window(a1 - da, b1 - db, a1 - da, b1 - db);
+//            pulse_draw_point24(mode_ryansimple_adjustintensity(color, D));
         }
     }
 }

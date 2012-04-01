@@ -20,18 +20,13 @@ void mode_binary_display_led(int iXPos, int iYPos, bool iLit) {
   #define yStart 22
   #define xGap 15 // space between boxes on same row
   #define yGap 35
-  pulse_set_draw_window(SCREEN_WIDTH - (xStart + (iXPos * xGap) + xLen),  //x1
-                        yStart + (iYPos * yGap),  //y1
-                        SCREEN_WIDTH - (xStart + (iXPos * xGap)), //x2
-                        yStart + (iYPos * yGap) + yLen); //y2
   color24_t colourWanted = { 0xFF, 0x00, 0x00, 0x00 }; // RED, off
   if (iLit) {
     colourWanted = COLOR_WHITE24; // WHITE, on
   }
-  for(int i=0; i<(xLen+1)*yLen; i++) {
-    pulse_draw_point24(colourWanted);
-  }
-
+  multi_draw_box(SCREEN_WIDTH - (xStart + (iXPos * xGap) + xLen),  //x1
+                        yStart + (iYPos * yGap),  //y1
+                        xLen, yLen, colourWanted); 
   multi_debug("display: %i %i %i\n", iXPos, iYPos, iLit);
 }
 

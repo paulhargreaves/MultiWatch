@@ -59,6 +59,8 @@ static const color24_t MODE_7SEGMENT_COLOR_DARKGREEN24 = {0x00, 0x0f, 0x00, 0};
 #define S_7NONE 0x0
 #define S_7ALL 0x7F
 
+void draw_7segment_clock(color24_t f_color, color24_t b_color);
+
 // Mask lookups for numbers 0-9
 static const uint8_t segment_7_mask[10] = { 
         S_7A | S_7B | S_7C | S_7D | S_7E | S_7F, // Digit 0
@@ -78,7 +80,8 @@ void mode_7segment_watch_functions(const enum multi_function_table func, ...) {
   multi_debug("enum %i\n", func);
   switch (func) {
     case MAINLOOP:
-      mode_7segment_tick_tock_loop();
+      draw_7segment_clock(MODE_7SEGMENT_COLOR_GREEN24,
+                          MODE_7SEGMENT_COLOR_DARKGREEN24);
       break;
     default: // ignore features we do not use
       break;
@@ -86,42 +89,53 @@ void mode_7segment_watch_functions(const enum multi_function_table func, ...) {
 }
 
 
+/*
 void draw_7_line (int x, int y, int xlen, int ylen, color24_t color) {
      pulse_set_draw_window(x, y, x+xlen, y+ylen);
      for (uint8_t i=0; i < (xlen+ylen); i++) {
           pulse_draw_point24(color);
      }
 }
+*/
 
 void draw_7segment_top (uint8_t x, uint8_t y, uint8_t w, color24_t color) {
     for (uint8_t i=0; i < SEGMENT_7_THICKNESS; i++) {
-        draw_7_line(x+i, y+i, w - (2*i), 0, color);
+        multi_draw_box(x+i, y+i, w-(2*i), 0, color);
+        //draw_7_line(x+i, y+i, w - (2*i), 0, color);
     }
 }
 
 void draw_7segment_bottom (uint8_t x, uint8_t y, uint8_t w, color24_t color) {
     for (uint8_t i=0; i < SEGMENT_7_THICKNESS; i++) {
-        draw_7_line(x+i, y-i, w - (2*i), 0, color);
+        multi_draw_box(x+i, y-i, w - (2*i), 0, color);
+        //draw_7_line(x+i, y-i, w - (2*i), 0, color);
     }
 }
 
 
 void draw_7segment_left (uint8_t x, uint8_t y, uint8_t h, color24_t color) {
     for (uint8_t i=0; i < SEGMENT_7_THICKNESS; i++) {
-        draw_7_line(x+i,y+i, 0, h/2 - (2*i), color);
+        multi_draw_box(x+i,y+i, 0, h/2 - (2*i), color);
+        //draw_7_line(x+i,y+i, 0, h/2 - (2*i), color);
     }
 }
 
 void draw_7segment_right (uint8_t x, uint8_t y, uint8_t h, color24_t color) {
     for (uint8_t i=0; i < SEGMENT_7_THICKNESS; i++) {
-        draw_7_line(x-i,y+i, 0, h/2 - (2*i), color);
+        //draw_7_line(x-i,y+i, 0, h/2 - (2*i), color);
+        multi_draw_box(x-i,y+i, 0, h/2 - (2*i), color);
     }
 }
 
 void draw_7segment_middle(uint8_t x, uint8_t y, uint8_t w, color24_t color) {
+/*
     draw_7_line(x+1, y, w - 2, 0, color);
     draw_7_line(x, y+1, w , 0, color);
     draw_7_line(x+1, y+2, w - 2, 0, color);
+*/
+    multi_draw_box(x+1, y, w - 2, 0, color);
+    multi_draw_box(x, y+1, w , 0, color);
+    multi_draw_box(x+1, y+2, w - 2, 0, color);
 }
 
 void draw_7segment_number(uint8_t val, uint8_t x, uint8_t y, uint8_t w, uint8_t h, color24_t f_color, color24_t b_color) {
@@ -155,6 +169,7 @@ void draw_7segment_one(uint8_t val, uint8_t x, uint8_t y, uint8_t h, color24_t f
 }
 
 void draw_7_colon (uint8_t x, uint8_t y, color24_t color) {
+/*
     draw_7_line(x,y-4, 0, 4, color);
     draw_7_line(x+1,y-4, 0, 4, color);
     draw_7_line(x+2,y-4, 0, 4, color);
@@ -162,6 +177,14 @@ void draw_7_colon (uint8_t x, uint8_t y, color24_t color) {
     draw_7_line(x,y+4, 0, 4, color);
     draw_7_line(x+1,y+4, 0, 4, color);
     draw_7_line(x+2,y+4, 0, 4, color);
+*/
+    multi_draw_box(x,y-4, 0, 4, color);
+    multi_draw_box(x+1,y-4, 0, 4, color);
+    multi_draw_box(x+2,y-4, 0, 4, color);
+
+    multi_draw_box(x,y+4, 0, 4, color);
+    multi_draw_box(x+1,y+4, 0, 4, color);
+    multi_draw_box(x+2,y+4, 0, 4, color);
 }
 
 void draw_7segment_clock(color24_t f_color, color24_t b_color) {
@@ -198,10 +221,3 @@ void draw_7segment_clock(color24_t f_color, color24_t b_color) {
 
 
 }
-
-
-void mode_7segment_tick_tock_loop(void) {
-  draw_7segment_clock(MODE_7SEGMENT_COLOR_GREEN24,
-                      MODE_7SEGMENT_COLOR_DARKGREEN24);
-}
-

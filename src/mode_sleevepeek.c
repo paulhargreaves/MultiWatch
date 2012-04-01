@@ -10,7 +10,6 @@
 #include "pulse_app.h"
 #include "mode_sleevepeek.h"
 
-
 // Put our resources in an easy to find list
 static const PulseResource modeSleevepeekWatchDigits[] = {
   IMAGE_MODE_SLEEVEPEEK_0,

@@ -44,6 +44,14 @@ void multi_vibe_for_ms(uint32_t); // send time in ms, motor will come on and off
 // go off the edge of the screen as long as x/y are on the screen
 void multi_draw_box(int x, int y, int width, int height, color24_t colour);
 
+// Use this macro to tell if two boxes overlap
+// Ideal for use in games etc
+// use like this  if (multi_boxes_overlap(x1,y1,w1,h1, x2,y2,w2,h2)) { "hit.."}
+#define multi_boxes_overlap(x1, y1, width1, height1, x2, y2, width2, height2) (!((y1 + height1 < y2) || (y1 > y2 + height2) || (x1 > x2 + width2)  || (x1 + width1 < x2)))
+
+// Cheap random number generator. Use instead of rand()
+uint32_t multi_rand(void);
+
 // Specialist things
 
 void multi_external_notification_handler_complete(void); // call only if you have a notifcation when your function has finished. This will allow the existing watch face to rebuild itself as it's likely you have overwritten it with an alert. See mode_notifcations.c for an example.
