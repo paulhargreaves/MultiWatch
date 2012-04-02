@@ -17,7 +17,6 @@ void multi_woke_from_sleep_by_button(void);
 void multi_change_watch_mode(void);
 void multi_timer_fired(void *);
 void multi_received_bluetooth_data(const uint8_t *);
-//void multi_vibe_off(void);
 void multi_change_brightness(void *);
 void multi_fake_function(void);
 void multi_tick_tock_loop(void);
@@ -173,19 +172,6 @@ void multi_vibe_for_ms(uint32_t iTimeToVibeForInMS) {
   pulse_vibe_on();
 }
   
-// Turns off the motor, called only via multi_vibe_for_ms
-/*
-void multi_vibe_off() {
-  multi_debug("multi_vibe_off()\n");
-
-  pulse_vibe_off();
-
-  //multi_cancel_timer(&multiVibeOnTimerID); // Cancel it
-  assert(multiVibeOnTimerID == -1); // Timer should be off now
-}
-*/
-
-
 void multi_notification_handler_pause_finished() {
   multi_debug("multi_notification_handler_pause_finished\n");
 
@@ -196,6 +182,10 @@ void multi_notification_handler_pause_finished() {
 
   multiPauseAllTimers = false;// Release existing timers
 
+  // Tell the face it was overwritten
+  multi_watch_functions[multiCurrentWatchMode](SCREENOVERWRITTEN);
+
+  // If it cannot handle being overwritten then we just refresh the screen
   if ( !multiMyWatchFaceCanHandleScreenOverwrites ) {
     multi_debug("watch face cannot handle pause so resetting it\n");
     multiCurrentWatchMode--; // change_watch_mode increments back again
@@ -210,7 +200,6 @@ void multi_notification_handler_pause_finished() {
 // current face as if we had just changed to it with the button.
 void multi_external_notification_handler_complete() { 
   multi_debug("multi_external_notification_handler_complete\n");
-  multiYourWatchFaceWasOverwritten = true;
   assert(multiCurrentWatchMode != -1);
   multiPauseAllTimers = true;// Pause existing timers
   
@@ -248,7 +237,6 @@ void multi_change_watch_mode() {
 
   multiLoopTimeMS = 200; // how long we normally loop a watch for, 200ms
   multiModeChangePressTime = MULTI_MODE_CHANGE_PRESS_TIME_DEFAULT;
-  multiYourWatchFaceWasOverwritten = false;
   multiMyWatchFaceCanHandleScreenOverwrites = false;
 
   // Update the current time
@@ -463,8 +451,9 @@ void multi_cancel_all_multi_timers() {
   }
 }
 
-// This function is called whenever the processor is about to sleep (to conserve power)
-// The sleep functionality is scheduled with pulse_update_power_down_timer(uint32_t)
+// This function is called whenever the processor is about to sleep
+// (to conserve power). The sleep functionality is scheduled with
+// pulse_update_power_down_timer(uint32_t)
 void main_app_handle_doz() { 
   // Cancel all the users timers (and most of ours)...
   multi_cancel_all_multi_timers();

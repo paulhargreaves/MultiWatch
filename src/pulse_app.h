@@ -36,7 +36,7 @@ int dbg_printf(const char *format, ...);
 // Functions you should examine and call
 
 void multi_cancel_timer(int32_t *); // use instead of pulse_cancel_timer. You only need to call this if you have an outstanding timer - otherwise it is automatically called for you and your variable will automatically be set to -1 when it triggers
-void multi_register_timer(int32_t *, uint32_t, PulseCallback, void *); // use instead of pulse_register_timer. NOTE: the parameter list is slightly different - rather than giving a return code, pass in the variable as the first parameter just like multi_cancel_timer. See pulse_app.c for more info.
+void multi_register_timer(int32_t *, uint32_t, PulseCallback, void *); // use instead of pulse_register_timer. NOTE: the parameter list is slightly different - rather than giving a return code, pass in the variable as the first parameter just like multi_cancel_timer. See pulse_app.c for more info. You must set your timer values to -1 in your init function.
 void multi_update_power_down_timer(uint32_t); // use instead of pulse_update_power_down_timer
 void multi_vibe_for_ms(uint32_t); // send time in ms, motor will come on and off automatically
 
@@ -111,18 +111,8 @@ bool multiSkipThisWatchMode; // Set in your MODEINIT if you want it skipped
 // watch faces could occur. Normally you can leave this as-is (false) and the
 // framework will automatically refresh itself (as if mode had just changed).
 // If you are writing a game then you likely want to set this to true and
-// you should monitor multiYourWatchFaceWasOverwritten in your main loop -
-// as soon as multiYourWatchFaceWasOverwritten becomes true then you know that
-// you need to blank the canvas and rebuild the normal users view.
+// rebuild your screen if SCREENOVERWRITTEN is called in watch_functions.
 bool multiMyWatchFaceCanHandleScreenOverwrites; // Set in MODEINIT if needed
-
-// Additional note about multiYourWatchFaceWasOverwritten - if you are
-// monitoring this flag then whenever you have rebuilt your screen you should
-// set this flag to false as the framework will not do it. Also if you have
-// not set multiMyFaceCanHandleScreenOverwrites to true then you should
-// IGNORE this variable entirly.
-bool multiYourWatchFaceWasOverwritten;
-
 
 // This structure is populated automatically frequently so should be
 // reasonably accurate... but is only available after MODEINIT in your watch
@@ -139,6 +129,7 @@ enum multi_function_table {
   BUTTONDOWN, // called immediately each time the button is pushed
   BUTTONUP, // called immediately each time the button is released
   BUTTONPRESSED, // called each time the button is pressed (and released)
+  SCREENOVERWRITTEN, // called when the screen gets overwritten
 };
 
 // COLDBOOT -- called only on first boot of watch. All modes will
@@ -170,5 +161,9 @@ enum multi_function_table {
 
 // BUTTONPRESSED -- called when the button is released along with the amount
 // of time in ms that the button was held down for.
+
+// SCREENOVERWRITTEN -- called if you have enabled
+// multiMyWatchFaceCanHandleScreenOverwrites and your screen gets overwritten
+// by a notificaton
 
 #endif
