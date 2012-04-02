@@ -93,6 +93,8 @@ bool multiBluetoothIsConnected;  // READ ONLY - do not set/change
 bool multiBatteryCharging; // READ ONLY - do not set/change
 
 // Check this to find out what the current watch name is.
+// Set it in MODEINIT for faces you want to export names of - e.g. see
+// mode_demo for an example of it being used in MODEINIT.
 char *multiMyWatchFaceName; // can be blank (e.g. 0)
 
 // Change to adjust the watch time changeover value from the default. If you
