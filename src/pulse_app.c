@@ -89,7 +89,6 @@ void main_app_init() {
   multi_debug("*************** main init complete\n");
 }
 
-
 // Called by an external sleep func
 void multi_external_sleep_init(void) {
   multi_cancel_all_multi_timers();
@@ -255,9 +254,14 @@ void multi_change_watch_mode() {
       multiCurrentWatchMode = 0;
     }
 
+    // Blank the current name of the watch face
+    multiMyWatchFaceName = NULL;
+
     // Then we tell the mode it needs to init variables etc
     // In here the mode may choose to set multiSkipThisWatchMode
     multi_watch_functions[multiCurrentWatchMode](MODEINIT);
+
+    multi_debug("The new watch face is called %s\n", multiMyWatchFaceName);
   }
 
   // Then we pretend we just work up

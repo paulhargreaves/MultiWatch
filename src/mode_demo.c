@@ -31,6 +31,7 @@ void mode_demo_cold_boot() {
 
 void mode_demo_init() {
   multi_debug("init\n");
+  multiMyWatchFaceName = "mode_demo";
   multiLoopTimeMS = 1000; // 1 second, since 200ms is too spammy in the demo
   printf("MODEINIT\nThe display is not really available...\n");
   // Would normally not pause here!
@@ -65,6 +66,7 @@ void mode_demo_button_pressed(int iTimeMS) {
 void mode_demo_woken_by_button() {
   multi_debug("mode_demo_woken_by_button\n");
   printf("BUTTONWAKE\n");
+  printf("My face name %s\n", multiMyWatchFaceName);
 }
 
 void mode_demo_watch_functions(const enum multi_function_table iFunc, ...) {

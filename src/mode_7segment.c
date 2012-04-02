@@ -83,6 +83,9 @@ void mode_7segment_watch_functions(const enum multi_function_table func, ...) {
       draw_7segment_clock(MODE_7SEGMENT_COLOR_GREEN24,
                           MODE_7SEGMENT_COLOR_DARKGREEN24);
       break;
+    case MODEINIT:
+      multiMyWatchFaceName = "mode_7segment";
+      break;
     default: // ignore features we do not use
       break;
   }
