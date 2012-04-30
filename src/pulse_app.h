@@ -85,12 +85,6 @@ void multi_external_notification_handler_complete(void); // call only if you hav
 // See mode_displaysleep.c for an example of usage.
 void (*multi_external_update_power_down_func)(int); // time in MS
 
-// Set this in your COLDBOOT if you want to run an app while the watch is
-// "officially" powered off. See the standard main_app_loop for restrictions
-// ONLY one watchface can set it... you mostly should be using the multiwatch
-// MAINLOOP function instead
-void (*multi_external_main_app_loop_func)(void);
-
 // call this from your sleep function when you are activating your sleep
 // function (e.g. pretending to power down)
 // This cancels all the existing timers for other watch faces
@@ -144,6 +138,8 @@ bool multiMyWatchFaceCanHandleScreenOverwrites; // Set in MODEINIT if needed
 // not at COLDBOOT
 struct pulse_time_tm multiTimeNow;  // you can change this data in your funcs
 
+uint32_t multi_time_in_sec(void); // returns the number of seconds today
+
 // The capabilites that your watch could / should implement
 enum multi_function_table {
   COLDBOOT, // called on first boot of the watch
@@ -155,6 +151,8 @@ enum multi_function_table {
   BUTTONUP, // called immediately each time the button is released
   BUTTONPRESSED, // called each time the button is pressed (and released)
   SCREENOVERWRITTEN, // called when the screen gets overwritten
+  HARDWARECHANGE, // called when bluetooth connects/disconnects
+  APPLOOP, // called every ?ms by main_app_loop - use MAINLOOP mostly instead!
 };
 
 // COLDBOOT -- called only on first boot of watch. All modes will
@@ -191,4 +189,13 @@ enum multi_function_table {
 // multiMyWatchFaceCanHandleScreenOverwrites and your screen gets overwritten
 // by a notificaton
 
+// HARDWARECHANGE -- called when bluetooth connects/disconnects even if your
+// face is not the active one, so if you use this you should not do any display
+// code etc in it since there is no way to know if you have control of the
+// display.
+
+// APPLOOP -- This is called very frequently via "main_app_loop()" and should
+// be ignored by 99% of faces. It is useful for those "helper" apps that need
+// to be called even when the watch screen is powered off (dozing). You should
+// be using MAINLOOP instead for most of your faces!
 #endif

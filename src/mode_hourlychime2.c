@@ -74,10 +74,9 @@ void mode_hourlychime2_watch_functions(const enum multi_function_table iFunc, ..
   //va_list varargs;
   //va_start(varargs, iFunc);
   switch (iFunc) {
-    case COLDBOOT:
+    case APPLOOP:
       // Here is where we set up this special watch mode
-      assert(multi_external_main_app_loop_func == NULL); // safety check 
-      multi_external_main_app_loop_func = &mode_hourlychime2_alarm_check;
+      mode_hourlychime2_alarm_check();
       break;
     case MODEINIT:
       // Here is where we tell the framework we do not want to be a face

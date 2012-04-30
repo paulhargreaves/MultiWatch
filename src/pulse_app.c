@@ -76,7 +76,6 @@ void main_app_init() {
 
   multiBluetoothIsConnected = false; // probably not connected immediately
   multi_external_update_power_down_func = NULL; // no function
-  multi_external_main_app_loop_func = NULL;
 
   // Call all the modes boot init functions
   int modes = 0;
@@ -439,12 +438,14 @@ void main_app_handle_button_up() {
 // call is made.
 void main_app_loop() {
   // get the current time and date
-  multi_debug("get date\n");
+  //multi_debug("get date\n");
   pulse_get_time_date(&multiTimeNow);
 
   // If the user has created their own main loop then call it
-  if (multi_external_main_app_loop_func) {
-    multi_external_main_app_loop_func(); // users func
+  int modes = 0;
+  while ( multi_watch_functions[modes] != NULL) {
+    multi_watch_functions[modes](APPLOOP);
+    modes++;
   }
 }
 
@@ -487,6 +488,12 @@ void main_app_handle_hardware_update(enum PulseHardwareEvent iEvent) {
     case BATTERY_NOT_CHARGING:
       multiBatteryCharging = false; break;
     default: break; // make compiler happy
+  }
+  // Now tell all the watch faces, regardless of their state
+  int modes = 0;
+  while ( multi_watch_functions[modes] != NULL) {
+    multi_watch_functions[modes](HARDWARECHANGE);
+    modes++;
   }
 }
 
@@ -581,6 +588,11 @@ void multi_notifications_new_notification(PulseNotificationId id) {
   multi_update_power_down_timer(MULTI_NOTIFICATIONS_PAUSE_TIMEOUT+1000); // keep powered up
 
   multiNotificationsCallbackFunc((void *)id);
+}
+
+uint32_t multi_time_in_sec(void) { 
+  return multiTimeNow.tm_hour * 60 * 60 + multiTimeNow.tm_min * 60 + 
+         multiTimeNow.tm_sec; 
 }
 
 // END
