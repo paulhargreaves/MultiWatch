@@ -24,17 +24,6 @@ static const PulseResource nixieWatchDigits[] = {
   IMAGE_MODE_NIXIE_8,
   IMAGE_MODE_NIXIE_9,
   IMAGE_MODE_NIXIE_10,
-  IMAGE_MODE_NIXIE_0_DOT,
-  IMAGE_MODE_NIXIE_1_DOT,
-  IMAGE_MODE_NIXIE_2_DOT,
-  IMAGE_MODE_NIXIE_3_DOT,
-  IMAGE_MODE_NIXIE_4_DOT,
-  IMAGE_MODE_NIXIE_5_DOT,
-  IMAGE_MODE_NIXIE_6_DOT,
-  IMAGE_MODE_NIXIE_7_DOT,
-  IMAGE_MODE_NIXIE_8_DOT,
-  IMAGE_MODE_NIXIE_9_DOT,
-  IMAGE_MODE_NIXIE_10_DOT
 };
   
 bool modeNixieSecondsMode;
@@ -76,16 +65,13 @@ void mode_nixie_draw_single_digit(int iDigitWanted,
   multi_debug("draw_single_digit %i %i %i\n", iDigitWanted, iDigitPosition, 
              iDotWanted);
 
-  // Decide on image from the inxieWatchDigits table; +11 adds the dot
-  unsigned int imageWanted = iDigitWanted + (11 * iDotWanted);
-
   // Already displaying this image in this place? Do nothing
-  if(modeNixieCurrentlyDisplayed[iDigitPosition] == imageWanted) {
+  if(modeNixieCurrentlyDisplayed[iDigitPosition] == iDigitWanted + iDotWanted) {
     multi_debug("skipping draw\n");
     return; 
   }
-  // Not displayed yet - store it anyway
-  modeNixieCurrentlyDisplayed[iDigitPosition] = imageWanted;
+  // Not displayed yet - store it anyway (dot causes it to shift...)
+  modeNixieCurrentlyDisplayed[iDigitPosition] = iDigitWanted + iDotWanted;
 
   // Decide on x&y positions
   unsigned int xPos, yPos;
@@ -101,7 +87,12 @@ void mode_nixie_draw_single_digit(int iDigitWanted,
       xPos = SCREEN_WIDTH / 2; yPos = SCREEN_HEIGHT / 2; break;
   }
 
-  pulse_draw_image(nixieWatchDigits[imageWanted], xPos, yPos);
+  pulse_draw_image(nixieWatchDigits[iDigitWanted], xPos, yPos);
+
+  if ( iDotWanted ) {
+    pulse_draw_image(IMAGE_MODE_NIXIE_DOT, 78, 116);
+  }
+
   multi_debug("draw should have happened\n");
 }
 

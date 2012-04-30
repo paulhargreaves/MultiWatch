@@ -38,6 +38,9 @@ typedef struct {
 #define MULTI_FADE_BRIGHTNESS_STEP 10 
 #define MULTI_FADE_ADJUST_TIME_MS 20
 
+#define MULTI_MAX_NOTIFICATION_CALLBACKS 10
+
+#define MULTI_NOTIFICATIONS_PAUSE_TIMEOUT 14000
 
 int multiCurrentWatchMode = -1; // first mode is 0, -1 will be incremented 
 int multiLastWatchMode; // used to see if button_up should be ignored
@@ -52,6 +55,9 @@ void main_app_init();
 // Space for our timer callbacks
 multiTimerCallbackStruct 
        multiTimerCallbackStore[MULTI_CALLBACK_STORAGE_SIZE]; 
+
+// Space for our notification callback
+PulseCallback multiNotificationsCallbackFunc;
 
 uint32_t multiMSAtButtonDown; // how long was button down for?
 int32_t multiButtonLongTimerID = -1; // used to store the long timeout
@@ -202,16 +208,13 @@ void multi_external_notification_handler_complete() {
   assert(multiCurrentWatchMode != -1);
   multiPauseAllTimers = true;// Pause existing timers
   
-  // Create a delay - 14 seconds
-  #define PAUSE_TIMEOUT 14000
   pulse_cancel_timer(&multiPauseAllTimersTimerID); // pulse
   assert(multiPauseAllTimersTimerID == -1);
-  multiPauseAllTimersTimerID = pulse_register_timer(PAUSE_TIMEOUT, // pulse
+  multiPauseAllTimersTimerID = pulse_register_timer(
+    MULTI_NOTIFICATIONS_PAUSE_TIMEOUT, // pulse
     (PulseCallback) &multi_notification_handler_pause_finished, 0);
   assert(multiPauseAllTimersTimerID != -1);
   multi_debug("delay created id %i\n", multiPauseAllTimersTimerID);
-  multiPowerDownPausedTimeoutSave = multiPowerDownTimeout;
-  multi_update_power_down_timer(PAUSE_TIMEOUT+1000); // keep powered up
 }
   
 // Change to the next watch mode
@@ -508,7 +511,8 @@ void multi_draw_box(int x, int y, int width, int height, color24_t colour) {
   }
 
   // Bail if the positions are off screen
-  if (y < 0 || y >= SCREEN_HEIGHT || x < 0 || x >= SCREEN_WIDTH) {
+  if (y < 0 || y >= SCREEN_HEIGHT || x < 0 ||
+      x >= SCREEN_WIDTH) {
     multi_debug("Not drawing (%i, %i)\n", x, y);
     return;
   }
@@ -548,5 +552,35 @@ uint32_t multi_rand(void) {
   return w = w ^ (w >> 19) ^ (t ^ (t >> 8));
 }
 
+// Register
+void multi_register_notifications(PulseCallback functionToCall) {
+  assert(multiNotificationsCallbackFunc == NULL);
+  multiNotificationsCallbackFunc = functionToCall;
+  assert(multiNotificationsCallbackFunc != NULL);
+
+  pulse_register_callback(ACTION_NEW_PULSE_PROTOCOL_NOTIFICATION,
+                 (PulseCallback) &multi_notifications_new_notification);
+}
+
+// Received a notification; call the user func
+void multi_notifications_new_notification(PulseNotificationId id) {
+  assert(multiNotificationsCallbackFunc != NULL);
+  multi_debug("Notification received. Calling user func\n");
+  #ifdef DEBUG
+  struct PulseNotification *notification = pulse_get_notification(id);
+  multi_debug("Type: %i\n", notification->type);
+  multi_debug("Sender: %s\n", notification->sender);
+  multi_debug("Body: %s\n", notification->body);
+  #endif
+
+  pulse_blank_canvas();
+  pulse_oled_set_brightness(100);
+
+  // Try to prevent the watch from turning off...
+  multiPowerDownPausedTimeoutSave = multiPowerDownTimeout;
+  multi_update_power_down_timer(MULTI_NOTIFICATIONS_PAUSE_TIMEOUT+1000); // keep powered up
+
+  multiNotificationsCallbackFunc((void *)id);
+}
 
 // END

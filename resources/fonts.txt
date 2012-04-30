@@ -12,7 +12,4 @@
 #
 # Example:
 # good_times.ttf, good_times_10, 10, n, n
-#Clockopia.ttf, clockopia_32, 32, y, n
-#Clockopia.ttf, clockopia_22, 22, y, n
-#Courier.ttf, courier_22, 22, y, n
-#Courier.ttf, courier_12, 12, n, n
+Georgia.ttf, georgia_10, 10, n, n

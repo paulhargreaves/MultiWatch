@@ -15,50 +15,89 @@
 #include "pulse_app.h"
 #include "mode_notifications.h"
 
+//char   mode_notifications_body_text[450]; // magic 
+struct PWTextBox mode_notifications_text_box;
+struct PWidgetTextDynamic mode_notifications_text_widget;
 
-// A not very beautiful example of how notifications can be handled
-// Probably no need to pause in this function as the function
-// multi_external_notification_hander_complete() does that to allow the
-// vibrate to occur properly
+void mode_notifications_print(enum PWTextStyle style, const char* iText) {
+  assert(mode_notifications_text_box.top >= 0);
+  assert(mode_notifications_text_box.bottom <= SCREEN_HEIGHT - 1);
+  assert(mode_notifications_text_box.left >= 0);
+  assert(mode_notifications_text_box.right <= SCREEN_WIDTH - 1);
+
+  pulse_init_dynamic_text_widget(&mode_notifications_text_widget, 
+                                 //mode_notifications_body_text,
+                                 iText,
+           FONT_GEORGIA_10, COLOR_WHITE24, style);
+
+  //sprintf(mode_notifications_body_text,"%s", iText); 
+
+  pulse_render_text(&mode_notifications_text_box,
+                    &mode_notifications_text_widget);
+}
+
+// Called when we want a notification to be displayed
 void mode_notifications_new_notification(PulseNotificationId id) {
-  // Clear the screen - it's mine temporarily
-  pulse_blank_canvas();
+  mode_notifications_text_box.right = SCREEN_WIDTH - 1;
+  mode_notifications_text_box.left = 0;
 
-  pulse_oled_set_brightness(100); // Max
- 
   struct PulseNotification *notification = pulse_get_notification(id);
-  printf("Type: ", notification->type);
-  switch(notification->type) {
-    case PNT_MAIL:
-      printf("Mail");
-      break;
-    case PNT_SMS:
-      printf("SMS");
-      break;
-    case PNT_CALENDAR:
-      printf("Calendar");
-      break;
-    case PNT_PHONE:
-      printf("Phone");
-      break;
-    default: // rest are not well described!
-      printf("%i - unsure", notification->type);
-      break;
+  if (notification->type == PNT_PHONE) {
+    multi_debug("Phone\n");
+    // Do phone stuff
+    pulse_draw_image(IMAGE_MODE_NOTIFICATIONS_PHONE, 32, 20);
+    mode_notifications_text_box.top = 60;
+    assert(mode_notifications_text_box.left == 0);
+    mode_notifications_text_box.bottom = SCREEN_HEIGHT - 1;
+    mode_notifications_print(PWTS_CENTER, notification->sender);
+
+    mode_notifications_text_box.top = 76;
+    mode_notifications_print(PWTS_CENTER, notification->body);
+
+    return;
+  } else { // Not a phone message
+    switch(notification->type) {
+      case PNT_MAIL:
+        pulse_draw_image(IMAGE_MODE_NOTIFICATIONS_EMAIL_ENVELOPE, 0, 3);
+        multi_debug("Mail\n");
+        break;
+      case PNT_SMS:
+        multi_debug("SMS\n");
+        // break; // FALLS THROUGH TO PNT_CALENDAR so they use the same icon
+      case PNT_CALENDAR:
+        pulse_draw_image(IMAGE_MODE_NOTIFICATIONS_CHAT_TALK_SPEAK, 0, 3);
+        multi_debug("Calendar\n");
+        break;
+      default: // rest are not well described!
+        //printf("No idea");
+        break;
+    }
+
+    // Common notification display format
+
+    // Body
+    assert(mode_notifications_text_box.right == SCREEN_WIDTH - 1);
+    assert(mode_notifications_text_box.left == 0);
+    mode_notifications_text_box.top = 16;
+    mode_notifications_text_box.bottom = SCREEN_HEIGHT - 1;
+    mode_notifications_print(PWTS_WRAP_AT_SPACE, notification->body);
+
+    // Sender
+    assert(mode_notifications_text_box.right == SCREEN_WIDTH - 1);
+    mode_notifications_text_box.top = 0;
+    mode_notifications_text_box.left = 20;
+    mode_notifications_text_box.bottom = 14;
+    mode_notifications_print(PWTS_WRAP_AT_SPACE, notification->sender);
   }
     
-  printf("\n\n\nMessage:\n\n%s\n\n", notification->sender);
-  if (notification->body) { 
-    printf("Body:\n%s\n", notification->body);
-  }
-
   // Pass back control to the framework; should be the last thing our
   // handler does. 
   multi_external_notification_handler_complete();
 }
 
 
-// Very simple initialisation - just hook into the one function I want, then
-// if I am called as a watch face I'll skip it
+// Very simple initialisation - just hook into the one function and
+// if called as a watch face, skip it
 void mode_notifications_watch_functions(const enum multi_function_table iFunc,
      ...) {
   multi_debug("enum %i\n", iFunc);
@@ -66,8 +105,8 @@ void mode_notifications_watch_functions(const enum multi_function_table iFunc,
   //va_start(varargs, iFunc);
   switch (iFunc) {
     case COLDBOOT:
-      pulse_register_callback(ACTION_NEW_PULSE_PROTOCOL_NOTIFICATION,
-                 (PulseCallback) &mode_notifications_new_notification);
+      multi_register_notifications(
+              (PulseCallback) &mode_notifications_new_notification);
       break;
     case MODEINIT:
       multiSkipThisWatchMode = true; // I am not a real watch face

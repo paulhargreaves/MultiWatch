@@ -35,10 +35,30 @@ int dbg_printf(const char *format, ...);
 
 // Functions you should examine and call
 
+struct multi_box_struct {
+  int x;
+  int y;
+  int width;
+  int height;
+  color24_t colour;
+} multi_box;
+
 void multi_cancel_timer(int32_t *); // use instead of pulse_cancel_timer. You only need to call this if you have an outstanding timer - otherwise it is automatically called for you and your variable will automatically be set to -1 when it triggers
 void multi_register_timer(int32_t *, uint32_t, PulseCallback, void *); // use instead of pulse_register_timer. NOTE: the parameter list is slightly different - rather than giving a return code, pass in the variable as the first parameter just like multi_cancel_timer. See pulse_app.c for more info. You must set your timer values to -1 in your init function.
 void multi_update_power_down_timer(uint32_t); // use instead of pulse_update_power_down_timer
 void multi_vibe_for_ms(uint32_t); // send time in ms, motor will come on and off automatically
+
+// Use this if you want to receive notifications. Only one watch face can
+// call this func (others will cause an assert in the sim)
+// The function you pass across will be treated as if you had really called
+// pulse_register_callback(ACTION_NEW_PULSE_NOTIFICATION, &your_func);
+void multi_register_notifications(PulseCallback); 
+
+// This can be called to trigger a notification message; for example if
+// face "a" is a notification app registered with multi_register_notifications
+// and face "b" is a history notification app then "b" can call this func with
+// a fake id that is then passed to "a"
+void multi_notifications_new_notification(PulseNotificationId);
 
 // Draws a box of the requested colour. Is safe to call with width/height that
 // go off the edge of the screen as long as x/y are on the screen
