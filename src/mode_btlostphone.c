@@ -33,17 +33,21 @@ uint32_t mode_btlostphone_min;
 // the screen isn't on.
 // pulse_get_millis doesn't update, and the clock runs so slow that per min is
 // about as good as it gets.
+// Screen cannot be used.
 void mode_btlostphone_apploop(void) {
   multi_debug("mode_btlostphone_apploop\n");
   // multi_debug("%i > %i\n", pulse_get_millis(), mode_btlostphone_millis);
   // ALARM if we have passed our timeout
   if (multiTimeNow.tm_min != mode_btlostphone_min) {
     multi_debug("vibe!\n");
+
+    // schedule next "alarm"
+    mode_btlostphone_min = multiTimeNow.tm_min;
+
+    // Buzz
     pulse_vibe_on();
     pulse_mdelay(1000); // should notice this...
     pulse_vibe_off();
-    // schedule next "alarm"
-    mode_btlostphone_min = multiTimeNow.tm_min;
   }
 }
 
@@ -74,15 +78,12 @@ void mode_btlostphone_watch_functions(const enum multi_function_table iFunc, ...
       // BUTTONUP falls through here...
       // IMPORTANT: may not be active watch face so no screen output
       mode_btlostphone_update_screen = true; // if active it will update
-      // Reset out "timer"
-      mode_btlostphone_min = multiTimeNow.tm_min; 
-      if (!multiBluetoothIsConnected) {
-        pulse_vibe_on();
-        pulse_mdelay(500);
-        pulse_vibe_off();
-      }
-      break;
+      // Reset our "timer"
+      mode_btlostphone_min = -1;
+      //break; // Falls through to APPLOOP to buzz immediately
     case APPLOOP:
+      // HARDWARECHANGE falls through here
+      // Hence no screen output allowed
       if (!multiBluetoothIsConnected && !mode_btlostphone_alarm_ignore) {
         mode_btlostphone_apploop();
       }

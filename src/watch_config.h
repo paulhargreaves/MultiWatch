@@ -21,7 +21,7 @@
 // table below
 void (* const multi_watch_functions[])(const enum multi_function_table func, ...) = { 
   //mode_hourlychime_watch_functions,
-//  mode_hourlychime2_watch_functions,
+  mode_hourlychime2_watch_functions,
 //  mode_ryansimple_watch_functions,
   // mode_displaysleep_watch_functions,
   // mode_notify_history_watch_functions,
