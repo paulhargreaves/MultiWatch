@@ -21,6 +21,7 @@ void mode_powerpoint_woken_by_button(void); // Woken from sleep
 
 // bt code to say next slide please! must match python script
 #define MODE_POWERPOINT_NEXT_SLIDE 69 
+#define MODE_POWERPOINT_PREV_SLIDE 70
 
 // How big our P icon is. Would us pulse_get_image_info but that lot of bytes...
 #define MODE_POWERPOINT_IMAGE_WIDTH 48

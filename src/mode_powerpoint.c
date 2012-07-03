@@ -18,6 +18,10 @@ PulseResource modePowerpointImage; // Powerpoint image to show
 int modePowerpointBTCounter; // The next counter we will send to the computer
 int modePowerpointBTExpectValue; // response we expect back - bt_counter
 int32_t modePowerpointBTWaitTimerID; // timer to wait for bt response
+int modePowerpointKeyToSend; // The key we want to send
+
+void mode_powerpoint_start_send_key(void);
+void mode_powerpoint_button_long_press(void);
 
 #define MODE_POWERPOINT_BT_COUNTER_START 150 // must be >128 <255
 #define MODE_POWERPOINT_BT_COUNTER_MAX 230 // must be >BT_COUNTER_START <255
@@ -26,7 +30,10 @@ void mode_powerpoint_watch_functions(const enum multi_function_table iFunc) {
   //multi_debug("enum %i\n", iFunc);
   switch (iFunc) {
     case MODEINIT:
-      mode_powerpoint_init();
+      modePowerpointJustChangedWatchMode = true;
+      modePowerpointBTCounter = MODE_POWERPOINT_BT_COUNTER_START;
+      multiButtonDownLongPressTimeMS = 400;
+      multiModeChangePressTime = 2000;
       break;
     case BUTTONWAKE:
       mode_powerpoint_woken_by_button();
@@ -36,6 +43,11 @@ void mode_powerpoint_watch_functions(const enum multi_function_table iFunc) {
       break;
     case BUTTONUP:
       mode_powerpoint_button_pressed();
+      break;
+    case BUTTONDOWNLONGPRESS:
+      modePowerpointKeyToSend = MODE_POWERPOINT_PREV_SLIDE;
+      mode_powerpoint_start_send_key();
+     // mode_powerpoint_button_long_press();
       break;
     case BLUETOOTHREC:
       mode_powerpoint_got_bluetooth_data();
@@ -59,15 +71,6 @@ void mode_powerpoint_woken_by_button() {
 
 }
 
-
-void mode_powerpoint_init() {
-  multi_debug("mode_powerpoint_init\n");
-
-  // Reset all of our globals
-  modePowerpointJustChangedWatchMode = true;
-  modePowerpointBTCounter = MODE_POWERPOINT_BT_COUNTER_START;
-}
-
 void mode_powerpoint_send_vibe_failed() {
   for(int i=0; i<2; i++) {
     // Warn the user we failed...
@@ -80,7 +83,15 @@ void mode_powerpoint_send_vibe_failed() {
 }
 
 void mode_powerpoint_button_pressed() {
-  multi_debug("powerpoint button pressed");
+  modePowerpointKeyToSend = MODE_POWERPOINT_NEXT_SLIDE;
+  mode_powerpoint_start_send_key();
+}
+
+void mode_powerpoint_button_long_press() {
+}
+
+void mode_powerpoint_start_send_key() {
+  multi_debug("powerpoint button pressed %i", modePowerpointKeyToSend);
 
   // Increment our bluetooth counter
   modePowerpointBTCounter++;
@@ -133,7 +144,7 @@ void mode_powerpoint_got_bluetooth_data() {
     // It is - cancel the failure timer
     multi_cancel_timer(&modePowerpointBTWaitTimerID);
     // Send the next slide key
-    pulse_send_bluetooth_int(MODE_POWERPOINT_NEXT_SLIDE); // send hello
+    pulse_send_bluetooth_int(modePowerpointKeyToSend); // send key
     multi_vibe_for_ms(MODE_POWERPOINT_VIBE_TIME); // vibe away!
   }
 
