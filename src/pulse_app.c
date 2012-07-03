@@ -21,6 +21,9 @@ void multi_change_brightness(void *);
 void multi_fake_function(void);
 void multi_tick_tock_loop(void);
 void multi_cancel_all_multi_timers(void);
+void main_app_loop(void);
+void multi_button_down_long(void);
+void main_app_init();
 
 typedef struct {
   int32_t callbackID;
@@ -43,14 +46,13 @@ typedef struct {
 #define MULTI_NOTIFICATIONS_PAUSE_TIMEOUT 14000
 
 int multiCurrentWatchMode = -1; // first mode is 0, -1 will be incremented 
-int multiLastWatchMode; // used to see if button_up should be ignored
+//int multiLastWatchMode; // used to see if button_up should be ignored
 int multiPowerDownTimeout; // how long do we want to powerdown for?
 int multiPowerDownPausedTimeoutSave; // a copy of multiPowerDownTimeout if we are paused
 bool multiPauseAllTimers = false; // if true we are not passing users timer calls back until later - used for external notification pause
 bool multiPoweredDown = false; // if true then some external sleep function is active
 int32_t multiPauseAllTimersTimerID = -1; // used to store the timer for pausing
 
-void main_app_init();
 
 // Space for our timer callbacks
 multiTimerCallbackStruct 
@@ -60,10 +62,12 @@ multiTimerCallbackStruct
 PulseCallback multiNotificationsCallbackFunc;
 
 uint32_t multiMSAtButtonDown; // how long was button down for?
-int32_t multiButtonLongTimerID = -1; // used to store the long timeout
+int32_t multiChangeModeTimerID = -1; // store the vlong press timeout
 int32_t multiVibeOnTimerID = -1; // used to store the vibe timeout
 int32_t multiTickTockTimerID = -1; // used to store the vibe timeout
 int multiTimerIDVariable = 0; // used to push out higher ids to catch bugs
+
+int32_t multiLongPressTimerID = -1; // for BUTTONDOWNLONGPRESS
 
 // This function is called once after the watch has booted up
 // and the OS has loaded
@@ -106,9 +110,10 @@ void multi_woke_from_sleep_by_button() {
   multi_debug("woke_from_sleep_by_button in mode %i\n", multiCurrentWatchMode);
 
   // reset our timers
-  multiButtonLongTimerID = -1; 
+  multiChangeModeTimerID = -1; 
   multiVibeOnTimerID = -1;
   multiTickTockTimerID = -1;
+  multiLongPressTimerID = -1; 
   assert(multiPauseAllTimers == false);
 
   // clear the canvas
@@ -151,8 +156,14 @@ void main_app_handle_button_down() {
   }
 
   multiMSAtButtonDown = pulse_get_millis(); // get the time in ms
-  multi_register_timer(&multiButtonLongTimerID, multiModeChangePressTime,
+
+  // Set up timer to change mode
+  multi_register_timer(&multiChangeModeTimerID, multiModeChangePressTime,
                       (PulseCallback) &multi_change_watch_mode, 0); 
+
+  // Set up timer to send long presses
+  multi_register_timer(&multiLongPressTimerID, multiButtonDownLongPressTimeMS,
+                      (PulseCallback) &multi_button_down_long, 0);
 
   // reset power down timer to whatever the user set
   multi_update_power_down_timer(multiPowerDownTimeout);
@@ -161,6 +172,15 @@ void main_app_handle_button_down() {
   multi_watch_functions[multiCurrentWatchMode](BUTTONDOWN);
 }
 
+// The button was pressed for a while? Send the message
+void multi_button_down_long(void) {
+  multi_debug("multi_button_down_long\n");
+  multi_cancel_timer(&multiLongPressTimerID);
+  assert(multiLongPressTimerID == -1);
+
+  // Tell the user function what just happened
+  multi_watch_functions[multiCurrentWatchMode](BUTTONDOWNLONGPRESS);
+}
 
 // Starts the motor up for a given amount of time
 void multi_vibe_for_ms(uint32_t iTimeToVibeForInMS) {
@@ -219,7 +239,7 @@ void multi_external_notification_handler_complete() {
 // Change to the next watch mode
 void multi_change_watch_mode() {
   multi_debug("multi-change-watch-mode from %i\n", multiCurrentWatchMode);
-  multi_debug("change-current timer says %i\n", multiButtonLongTimerID);
+  multi_debug("change-current timer says %i\n", multiChangeModeTimerID);
 
   // First we cancel all the outstanding timers
   multi_cancel_all_multi_timers();
@@ -228,20 +248,24 @@ void multi_change_watch_mode() {
   //multi_vibe_off();
   pulse_vibe_off();
 
-  // Remember what the last mode was, for button_up so it can ignore first press
+/*  // Remember what the last mode was, for button_up so it can ignore first press
   if (!multiPauseAllTimers) { // but not if we were just pausing...
     multiLastWatchMode = multiCurrentWatchMode;
   }
+*/
 
   // Set powerdown timer now..., the individual modes may override
   multi_update_power_down_timer(MULTI_DEFAULT_POWERDOWN_TIME);
 
+  // Reset options that the face may need to overwrite
   multiLoopTimeMS = 200; // how long we normally loop a watch for, 200ms
   multiModeChangePressTime = MULTI_MODE_CHANGE_PRESS_TIME_DEFAULT;
   multiMyWatchFaceCanHandleScreenOverwrites = false;
+  multiButtonDownLongPressTimeMS = 50000; // long time... 
 
   // Update the current time
-  pulse_get_time_date(&multiTimeNow);
+  //pulse_get_time_date(&multiTimeNow);
+  main_app_loop(); // using main_app_loop so that utility apps can adjust "time"
 
   // Now we change the mode
   multiSkipThisWatchMode = true; 
@@ -406,29 +430,41 @@ void main_app_handle_button_up() {
     return;
   }
   
-  // Is someone cancelling the alert? If so, allow it to be cancelled
+  // Is someone cancelling an external alert? If so, allow it to be cancelled
   if (multiPauseAllTimers) {
     multi_debug("ignoring button up but cancelling alert pause\n");
     multi_notification_handler_pause_finished(); // 
     return;
   }
 
-  multi_debug("multi_button_long_timer_id = %i\n", multiButtonLongTimerID);
-  multi_cancel_timer(&multiButtonLongTimerID); // cancel pending mode change
-  assert(multiButtonLongTimerID == -1);
+  // Cancel pending mode change
+  multi_debug("multiChangeModeTimerID=%i\n", multiChangeModeTimerID);
+  multi_cancel_timer(&multiChangeModeTimerID); // cancel pending mode change
+  assert(multiChangeModeTimerID == -1);
 
-  uint32_t downTime=pulse_get_millis() - multiMSAtButtonDown; // how long
-  multi_debug("time down was %i\n", downTime);
+  // If there isn't a button_down timer (long press) running then
+  // this must be the button release so ignore it
+  if ( multiLongPressTimerID == -1 ) {
+    multi_debug("ignoring button up as no long button timer is running.\n");
+    return;
+  }
 
+  multi_cancel_timer(&multiLongPressTimerID); // cancel button long press
+  assert(multiLongPressTimerID == -1);
+
+/* -- Can this go now?
   // Caused by a mode change? We are now in the new mode so ignore it
   if ( multiCurrentWatchMode != multiLastWatchMode &&
        multiLastWatchMode != -1 ) {  // -1 is no mode previously
     multiLastWatchMode = multiCurrentWatchMode;
     return;
   }
+*/
 
+  // Store how long the button was pressed down for
+  multiButtonPressedDownTimeInMS = pulse_get_millis() - multiMSAtButtonDown;
+  
   // Tell the user functions button was released
-  multi_watch_functions[multiCurrentWatchMode](BUTTONPRESSED, downTime);
   multi_watch_functions[multiCurrentWatchMode](BUTTONUP);
 }
 
@@ -499,7 +535,8 @@ void main_app_handle_hardware_update(enum PulseHardwareEvent iEvent) {
 
 // Handles bluetooth messages
 void multi_received_bluetooth_data(const uint8_t *iBuffer) {
-  multi_watch_functions[multiCurrentWatchMode](BLUETOOTHREC, iBuffer);
+  multiBluetoothRecBuffer = (void*)iBuffer;
+  multi_watch_functions[multiCurrentWatchMode](BLUETOOTHREC);
 }
 
 

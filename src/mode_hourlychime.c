@@ -103,7 +103,8 @@ void mode_hourlychime_set_next_alarm(void) {
 void mode_hourlychime_woke_by_alarm(void) {
   // Refresh the time since at this point the main_app_loop hasn't fired...
   // sigh...
-  pulse_get_time_date(&multiTimeNow);
+  main_app_loop();
+  //pulse_get_time_date(&multiTimeNow);
 
   // Set the next alarm
   mode_hourlychime_set_next_alarm();
@@ -114,10 +115,8 @@ void mode_hourlychime_woke_by_alarm(void) {
   multi_please_sleep_now(500);
 }
 
-void mode_hourlychime_watch_functions(const enum multi_function_table iFunc, ...) {
-  multi_debug("enum %i\n", iFunc);
-  //va_list varargs;
-  //va_start(varargs, iFunc);
+void mode_hourlychime_watch_functions(const enum multi_function_table iFunc) {
+  //multi_debug("enum %i\n", iFunc);
   switch (iFunc) {
     case COLDBOOT:
       // Here is where we set up this special watch mode
@@ -155,6 +154,5 @@ void mode_hourlychime_watch_functions(const enum multi_function_table iFunc, ...
     default: // ignore features we do not use
       break;
   }
-  //va_end(varargs);
 }
 

@@ -9,7 +9,7 @@
 #ifndef mode_nixie_h
 #define mode_nixie_h
 
-void mode_nixie_watch_functions(const enum multi_function_table, ...);
+void mode_nixie_watch_functions(const enum multi_function_table);
 
 // Woken from sleep
 void mode_nixie_woken_by_button(void);

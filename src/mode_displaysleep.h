@@ -9,6 +9,6 @@
 #ifndef mode_displaysleep_h
 #define mode_displaysleep_h
 
-void mode_displaysleep_watch_functions(const enum multi_function_table, ...);
+void mode_displaysleep_watch_functions(const enum multi_function_table);
 
 #endif

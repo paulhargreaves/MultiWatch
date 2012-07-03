@@ -9,6 +9,6 @@
 #ifndef mode_ryansimple_watch_h
 #define mode_ryansimple_watch_h
 
-void mode_ryansimple_watch_functions(const enum multi_function_table, ...);
+void mode_ryansimple_watch_functions(const enum multi_function_table);
 
 #endif

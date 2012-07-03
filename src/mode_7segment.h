@@ -8,7 +8,7 @@
 #ifndef mode_7segment_h
 #define mode_7segment_h
 
-void mode_7segment_watch_functions(const enum multi_function_table, ...);
+void mode_7segment_watch_functions(const enum multi_function_table);
 
 // Each 1 second tick
 void mode_7segment_tick_tock_loop(void);

@@ -52,10 +52,8 @@ void mode_btlostphone_apploop(void) {
 }
 
 
-void mode_btlostphone_watch_functions(const enum multi_function_table iFunc, ...) {
-  multi_debug("enum %i\n", iFunc);
-  //va_list varargs;
-  //va_start(varargs, iFunc);
+void mode_btlostphone_watch_functions(const enum multi_function_table iFunc) {
+  //multi_debug("enum %i\n", iFunc);
   switch (iFunc) {
     case COLDBOOT:
       mode_btlostphone_alarm_ignore = false;
@@ -91,7 +89,6 @@ void mode_btlostphone_watch_functions(const enum multi_function_table iFunc, ...
     default: // ignore features we do not use
       break;
   }
-  //va_end(varargs);
 }
 
 void mode_btlostphone_draw_watch_face() {

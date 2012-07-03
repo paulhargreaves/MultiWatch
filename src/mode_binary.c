@@ -49,10 +49,8 @@ void mode_binary_draw_watch_face() {
    
 }
 
-void mode_binary_watch_functions(const enum multi_function_table iFunc, ...) {
-  multi_debug("enum %i\n", iFunc);
-  //va_list varargs;
-  //va_start(varargs, iFunc);
+void mode_binary_watch_functions(const enum multi_function_table iFunc) {
+  //multi_debug("enum %i\n", iFunc);
   switch (iFunc) {
     case MODEINIT:
       multi_update_power_down_timer(MODE_BINARY_POWERDOWN_TIME);
@@ -63,6 +61,5 @@ void mode_binary_watch_functions(const enum multi_function_table iFunc, ...) {
     default: // ignore features we do not use
       break;
   }
-  //va_end(varargs);
 }
 

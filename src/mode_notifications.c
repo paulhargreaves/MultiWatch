@@ -98,11 +98,8 @@ void mode_notifications_new_notification(PulseNotificationId id) {
 
 // Very simple initialisation - just hook into the one function and
 // if called as a watch face, skip it
-void mode_notifications_watch_functions(const enum multi_function_table iFunc,
-     ...) {
-  multi_debug("enum %i\n", iFunc);
-  //va_list varargs;
-  //va_start(varargs, iFunc);
+void mode_notifications_watch_functions(const enum multi_function_table iFunc) {
+  //multi_debug("enum %i\n", iFunc);
   switch (iFunc) {
     case COLDBOOT:
       multi_register_notifications(
@@ -114,6 +111,5 @@ void mode_notifications_watch_functions(const enum multi_function_table iFunc,
     default: // ignore features we do not use
       break;
   }
-  //va_end(varargs);
 }
 

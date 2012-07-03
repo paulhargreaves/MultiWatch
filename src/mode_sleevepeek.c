@@ -68,9 +68,8 @@ void mode_sleevepeek_display_time() {
 }
 
 // The main init function
-void mode_sleevepeek_watch_functions(const enum multi_function_table iFunc,
-                                       ...) {
-  multi_debug("enum %i\n", iFunc);
+void mode_sleevepeek_watch_functions(const enum multi_function_table iFunc) {
+  //multi_debug("enum %i\n", iFunc);
   switch (iFunc) {
     case BUTTONWAKE:
       mode_sleevepeek_display_time();

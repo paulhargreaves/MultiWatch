@@ -19,7 +19,6 @@ enum multi_function_table {
   BLUETOOTHREC, // called each time the watch received bluetooth data
   BUTTONDOWN, // called immediately each time the button is pushed
   BUTTONUP, // called immediately each time the button is released
-  BUTTONPRESSED, // called each time the button is pressed (and released)
 };
 */
 
@@ -43,24 +42,20 @@ void mode_demo_main_loop() {
   printf("MAINLOOP\n");
 }
 
-void mode_demo_bluetooth_received(const uint8_t *iBuffer) {
+void mode_demo_bluetooth_received() {
   multi_debug("mode_demo_bluetooth_received\n");
-  printf("BLUETOOTHREC\nFirst byte was %i\n", iBuffer[0]);
+  printf("BLUETOOTHREC\nFirst byte was %i\n", multiBluetoothRecBuffer[0]);
 }
 
 void mode_demo_button_up() {
   multi_debug("mode_demo_button_up\n");
   printf("BUTTONUP\n");
+  printf("Pressed\nFor %i ms\n", multiButtonPressedDownTimeInMS);
 }
 
 void mode_demo_button_down() {
   multi_debug("mode_demo_button_down\n");
   printf("BUTTONDOWN\n");
-}
-
-void mode_demo_button_pressed(int iTimeMS) {
-  multi_debug("mode_demo_button_pressed\n");
-  printf("BUTTONPRESSED\nFor %i ms\n", iTimeMS);
 }
 
 void mode_demo_woken_by_button() {
@@ -69,10 +64,8 @@ void mode_demo_woken_by_button() {
   printf("My face name %s\n", multiMyWatchFaceName);
 }
 
-void mode_demo_watch_functions(const enum multi_function_table iFunc, ...) {
-  multi_debug("enum %i\n", iFunc);
-  va_list varargs;
-  va_start(varargs, iFunc);
+void mode_demo_watch_functions(const enum multi_function_table iFunc) {
+  //multi_debug("enum %i\n", iFunc);
   switch (iFunc) {
     case COLDBOOT:
       mode_demo_cold_boot();
@@ -92,15 +85,11 @@ void mode_demo_watch_functions(const enum multi_function_table iFunc, ...) {
     case BUTTONDOWN:
       mode_demo_button_down();
       break;
-    case BUTTONPRESSED:
-      mode_demo_button_pressed(va_arg(varargs, int));
-      break;
     case BLUETOOTHREC:
-      mode_demo_bluetooth_received(va_arg(varargs, uint8_t *));
+      mode_demo_bluetooth_received();
       break;
     default: // ignore features we do not use
       break;
   }
-  va_end(varargs);
 }
 

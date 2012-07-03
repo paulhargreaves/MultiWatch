@@ -8,10 +8,10 @@
 #define mode_powerpoint_h
 
 
-void mode_powerpoint_watch_functions(const enum multi_function_table, ...);
+void mode_powerpoint_watch_functions(const enum multi_function_table);
 void mode_powerpoint_draw_watch_face(void); // draw P logo
 void mode_powerpoint_bt_failed(void); // bt message failed :(
-void mode_powerpoint_got_bluetooth_data(const uint8_t *); // got a BT message!
+void mode_powerpoint_got_bluetooth_data(void); // got a BT message!
 void mode_powerpoint_button_pressed(void); // Handling button pressing
 void mode_powerpoint_init(void); // Called each time mode is selected
 void mode_powerpoint_woken_by_button(void); // Woken from sleep

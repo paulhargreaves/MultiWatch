@@ -76,8 +76,8 @@ static const uint8_t segment_7_mask[10] = {
 };
   
 
-void mode_7segment_watch_functions(const enum multi_function_table func, ...) {
-  multi_debug("enum %i\n", func);
+void mode_7segment_watch_functions(const enum multi_function_table func) {
+  //multi_debug("enum %i\n", func);
   switch (func) {
     case MAINLOOP:
       draw_7segment_clock(MODE_7SEGMENT_COLOR_GREEN24,

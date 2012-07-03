@@ -9,6 +9,6 @@
 #ifndef mode_simple_notifications_h
 #define mode_simple_notifications_h
 
-void mode_simple_notifications_watch_functions(const enum multi_function_table, ...);
+void mode_simple_notifications_watch_functions(const enum multi_function_table);
 
 #endif

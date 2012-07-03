@@ -9,6 +9,6 @@
 #ifndef mode_sleevepeek_h
 #define mode_sleevepeek_h
 
-void mode_sleevepeek_watch_functions(const enum multi_function_table, ...);
+void mode_sleevepeek_watch_functions(const enum multi_function_table);
 
 #endif

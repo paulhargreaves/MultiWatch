@@ -4,6 +4,6 @@
 #ifndef mode_demo_h
 #define mode_demo_h
 
-void mode_demo_watch_functions(const enum multi_function_table, ...);
+void mode_demo_watch_functions(const enum multi_function_table);
 
 #endif

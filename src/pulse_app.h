@@ -120,6 +120,27 @@ char *multiMyWatchFaceName; // can be blank (e.g. 0)
 int multiModeChangePressTime; // Set in your MODEINIT if you need to change
 #define MULTI_MODE_CHANGE_PRESS_TIME_DEFAULT 1400  // 1.4 secs
 
+// Change to control when BUTTONDOWNLONGPRESS events are sent. Should be set
+// lower than multiModeChangePressTime otherwise never fires.
+// Using this option will cause the next BUTTONUP event to be ignored, so
+// it expected that your BUTTONDOWNLONGPRESS function is also acting as
+// button up. This is typically used for a button serving "double duty" such
+// as changing a value on screen or moving to the next value. See the watch
+// face Altertime for an example
+int multiButtonDownLongPressTimeMS; // Set in your MODEINIT if needed
+
+// Read this variable to see how long the button was pressed down for, on a
+// BUTTONUP event. Will be undefined at any other time than at BUTTONUP (should
+// be length of last buttonpress, but may have been for a different watch face)
+// so use with caution if not in BUTTONUP. This replaced the BUTTONPRESSED 
+// functionality.
+uint32_t multiButtonPressedDownTimeInMS; 
+
+// When BLUETOOTHREC is called, this will hold the address of the bluetooth
+// buffer. See mode_powerpoint for an example. Invalid at any other point in
+// time!
+uint8_t *multiBluetoothRecBuffer; 
+
 // Set to true in your MODEINIT function if you do not want this mode to be
 // active. This is only really used for modes that just set alarms or monitor
 // in the background via their own registered pulse_ timers, and should rarely
@@ -149,10 +170,10 @@ enum multi_function_table {
   BLUETOOTHREC, // called each time the watch received bluetooth data
   BUTTONDOWN, // called immediately each time the button is pushed
   BUTTONUP, // called immediately each time the button is released
-  BUTTONPRESSED, // called each time the button is pressed (and released)
   SCREENOVERWRITTEN, // called when the screen gets overwritten
   HARDWARECHANGE, // called when bluetooth connects/disconnects
   APPLOOP, // called every ?ms by main_app_loop - use MAINLOOP mostly instead!
+  BUTTONDOWNLONGPRESS, // called if a long press is indicated
 };
 
 // COLDBOOT -- called only on first boot of watch. All modes will
@@ -182,9 +203,6 @@ enum multi_function_table {
 
 // BUTTONUP -- called immediately as the button is released.
 
-// BUTTONPRESSED -- called when the button is released along with the amount
-// of time in ms that the button was held down for.
-
 // SCREENOVERWRITTEN -- called if you have enabled
 // multiMyWatchFaceCanHandleScreenOverwrites and your screen gets overwritten
 // by a notificaton
@@ -198,4 +216,8 @@ enum multi_function_table {
 // be ignored by 99% of faces. It is useful for those "helper" apps that need
 // to be called even when the watch screen is powered off (dozing). You should
 // be using MAINLOOP instead for most of your faces!
+
+// BUTTONDOWNLONGPRESS - called once multiButtonDownLongPressTimeMS has passed
+// with the button held down. If you expect to receive these events then
+// remember that BUTTONUP will not be called if they are triggered.
 #endif

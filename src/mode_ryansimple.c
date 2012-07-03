@@ -120,10 +120,8 @@ void mode_ryansimple_swap(uint8_t *a, uint8_t *b)
     *b = temp;
 }
 
-void mode_ryansimple_watch_functions(const enum multi_function_table iFunc, ...) {
-  multi_debug("enum %i\n", iFunc);
-  //va_list varargs;
-  //va_start(varargs, iFunc);
+void mode_ryansimple_watch_functions(const enum multi_function_table iFunc) {
+  //multi_debug("enum %i\n", iFunc);
   switch (iFunc) {
     /*case MODEINIT:
       mode_ryansimple_current_min = 0;
@@ -139,7 +137,6 @@ void mode_ryansimple_watch_functions(const enum multi_function_table iFunc, ...)
     default: // ignore features we do not use
       break;
   }
-  //va_end(varargs);
 }
 
 

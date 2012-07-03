@@ -277,9 +277,8 @@ void mode_starkiller_main_app_loop() {
 }
 
 // The main init function
-void mode_starkiller_watch_functions(const enum multi_function_table iFunc,
-                                       ...) {
-  multi_debug("enum %i\n", iFunc);
+void mode_starkiller_watch_functions(const enum multi_function_table iFunc) {
+  //multi_debug("enum %i\n", iFunc);
   switch (iFunc) {
     case MODEINIT:
       multiMyWatchFaceCanHandleScreenOverwrites = true;

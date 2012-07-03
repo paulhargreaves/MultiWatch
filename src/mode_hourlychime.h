@@ -9,6 +9,7 @@
 #ifndef mode_hourlychime_h
 #define mode_hourlychime_h
 
-void mode_hourlychime_watch_functions(const enum multi_function_table, ...);
+void mode_hourlychime_watch_functions(const enum multi_function_table);
+void main_app_loop(void); // is in pulse_app.c... call manually carefully...
 
 #endif

@@ -7,6 +7,6 @@
 #ifndef mode_btlostphone_h
 #define mode_btlostphone_h
 
-void mode_btlostphone_watch_functions(const enum multi_function_table, ...);
+void mode_btlostphone_watch_functions(const enum multi_function_table);
 
 #endif

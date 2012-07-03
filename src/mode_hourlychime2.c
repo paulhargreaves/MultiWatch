@@ -69,10 +69,8 @@ void mode_hourlychime2_alarm_check(void) {
 
 }
 
-void mode_hourlychime2_watch_functions(const enum multi_function_table iFunc, ...) {
-  multi_debug("enum %i\n", iFunc);
-  //va_list varargs;
-  //va_start(varargs, iFunc);
+void mode_hourlychime2_watch_functions(const enum multi_function_table iFunc) {
+  //multi_debug("enum %i\n", iFunc);
   switch (iFunc) {
     case APPLOOP:
       // Here is where we set up this special watch mode
@@ -85,6 +83,5 @@ void mode_hourlychime2_watch_functions(const enum multi_function_table iFunc, ..
     default: // ignore features we do not use
       break;
   }
-  //va_end(varargs);
 }
 

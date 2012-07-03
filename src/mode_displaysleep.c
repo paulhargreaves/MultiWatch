@@ -115,9 +115,8 @@ void mode_displaysleep_update_power_down(int iPowerDownMS) {
 // The main init function
 // In here we need to hook in the external update function and the
 // flag so that we are not treated like a normal watchface.
-void mode_displaysleep_watch_functions(const enum multi_function_table iFunc,
-                                       ...) {
-  multi_debug("enum %i\n", iFunc);
+void mode_displaysleep_watch_functions(const enum multi_function_table iFunc) {
+  //multi_debug("enum %i\n", iFunc);
   // Only COLDBOOT and MODEINIT will ever be called in here because we are not
   // a real watch face (as far as a user being able to select us manually).
   switch (iFunc) {

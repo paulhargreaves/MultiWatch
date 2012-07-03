@@ -28,10 +28,8 @@ static const PulseResource nixieWatchDigits[] = {
   
 bool modeNixieSecondsMode;
 
-void mode_nixie_watch_functions(const enum multi_function_table iFunc, ...) {
-  multi_debug("enum %i\n", iFunc);
-  // varargs fuctionality is removed from this example for space reasons
-  // see the powerpoint or demo.c for better examples
+void mode_nixie_watch_functions(const enum multi_function_table iFunc) {
+  //multi_debug("enum %i\n", iFunc);
   switch (iFunc) {
     case BUTTONWAKE:
       mode_nixie_woken_by_button();

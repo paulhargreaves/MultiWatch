@@ -22,10 +22,8 @@ int32_t modePowerpointBTWaitTimerID; // timer to wait for bt response
 #define MODE_POWERPOINT_BT_COUNTER_START 150 // must be >128 <255
 #define MODE_POWERPOINT_BT_COUNTER_MAX 230 // must be >BT_COUNTER_START <255
 
-void mode_powerpoint_watch_functions(const enum multi_function_table iFunc, ...) {
-  multi_debug("enum %i\n", iFunc);
-  va_list varargs;
-  va_start(varargs, iFunc);
+void mode_powerpoint_watch_functions(const enum multi_function_table iFunc) { 
+  //multi_debug("enum %i\n", iFunc);
   switch (iFunc) {
     case MODEINIT:
       mode_powerpoint_init();
@@ -40,13 +38,11 @@ void mode_powerpoint_watch_functions(const enum multi_function_table iFunc, ...)
       mode_powerpoint_button_pressed();
       break;
     case BLUETOOTHREC:
-      mode_powerpoint_got_bluetooth_data(va_arg(varargs, uint8_t *));
-      ///hmm..
+      mode_powerpoint_got_bluetooth_data();
       break;
     default: // ignore features we do not use
       break;
   }
-  va_end(varargs);
 }
 
 void mode_powerpoint_woken_by_button() {
@@ -128,12 +124,12 @@ void mode_powerpoint_draw_watch_face() {
 }
 
 // got a bluetooth message... hurrah?
-void mode_powerpoint_got_bluetooth_data(const uint8_t *iBuffer) {
+void mode_powerpoint_got_bluetooth_data() {
   multi_debug("mode_powerpoint_got_bluetooth_data\n");
   modePowerpointBTCounter++; // increment, we don't need to check its valid
 
   // We check if this is the data we were looking for
-  if (iBuffer[0] == modePowerpointBTExpectValue) {
+  if (multiBluetoothRecBuffer[0] == modePowerpointBTExpectValue) {
     // It is - cancel the failure timer
     multi_cancel_timer(&modePowerpointBTWaitTimerID);
     // Send the next slide key

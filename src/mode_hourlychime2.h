@@ -9,7 +9,7 @@
 #ifndef mode_hourlychime2_h
 #define mode_hourlychime2_h
 
-void mode_hourlychime2_watch_functions(const enum multi_function_table, ...);
+void mode_hourlychime2_watch_functions(const enum multi_function_table);
 
 // How often we want to alarm? Most of it is hard coded in the .c
 // Set to >60 if you only want hourlies
