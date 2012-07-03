@@ -3,6 +3,7 @@
 // Hourly chime
 // Buzzes the watch every hour from 8:59am until 5:59pm on workdays. 
 // Pressing the button enables or disables the alarm
+// YOU SHOULD PROBABLY BE USING HOURLYCHIME2 as it is much smaller
 // 
 // Licensed under Creative Commons: Non-Commercial, Share-Alike, Attributation
 // http://creativecommons.org/licenses/by-nc-sa/3.0/

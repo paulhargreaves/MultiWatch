@@ -129,13 +129,6 @@ int multiModeChangePressTime; // Set in your MODEINIT if you need to change
 // face Altertime for an example
 int multiButtonDownLongPressTimeMS; // Set in your MODEINIT if needed
 
-// Read this variable to see how long the button was pressed down for, on a
-// BUTTONUP event. Will be undefined at any other time than at BUTTONUP (should
-// be length of last buttonpress, but may have been for a different watch face)
-// so use with caution if not in BUTTONUP. This replaced the BUTTONPRESSED 
-// functionality.
-uint32_t multiButtonPressedDownTimeInMS; 
-
 // When BLUETOOTHREC is called, this will hold the address of the bluetooth
 // buffer. See mode_powerpoint for an example. Invalid at any other point in
 // time!

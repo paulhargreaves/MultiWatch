@@ -32,6 +32,7 @@ void mode_demo_init() {
   multi_debug("init\n");
   multiMyWatchFaceName = "mode_demo";
   multiLoopTimeMS = 1000; // 1 second, since 200ms is too spammy in the demo
+  multiButtonDownLongPressTimeMS = 400; // just under half a second
   printf("MODEINIT\nThe display is not really available...\n");
   // Would normally not pause here!
   pulse_mdelay(2000);
@@ -50,7 +51,11 @@ void mode_demo_bluetooth_received() {
 void mode_demo_button_up() {
   multi_debug("mode_demo_button_up\n");
   printf("BUTTONUP\n");
-  printf("Pressed\nFor %i ms\n", multiButtonPressedDownTimeInMS);
+}
+
+void mode_demo_button_down_long_press() {
+  multi_debug("mode_demo_button_down_long_press\n");
+  printf("BUTTONDOWNLONGPRESS\n");
 }
 
 void mode_demo_button_down() {
@@ -87,6 +92,9 @@ void mode_demo_watch_functions(const enum multi_function_table iFunc) {
       break;
     case BLUETOOTHREC:
       mode_demo_bluetooth_received();
+      break;
+    case BUTTONDOWNLONGPRESS:
+      mode_demo_button_down_long_press();
       break;
     default: // ignore features we do not use
       break;

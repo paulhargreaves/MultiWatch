@@ -61,7 +61,6 @@ multiTimerCallbackStruct
 // Space for our notification callback
 PulseCallback multiNotificationsCallbackFunc;
 
-uint32_t multiMSAtButtonDown; // how long was button down for?
 int32_t multiChangeModeTimerID = -1; // store the vlong press timeout
 int32_t multiVibeOnTimerID = -1; // used to store the vibe timeout
 int32_t multiTickTockTimerID = -1; // used to store the vibe timeout
@@ -154,8 +153,6 @@ void main_app_handle_button_down() {
     multi_debug("ignoring button down as we are paused\n");
     return;
   }
-
-  multiMSAtButtonDown = pulse_get_millis(); // get the time in ms
 
   // Set up timer to change mode
   multi_register_timer(&multiChangeModeTimerID, multiModeChangePressTime,
@@ -461,9 +458,6 @@ void main_app_handle_button_up() {
   }
 */
 
-  // Store how long the button was pressed down for
-  multiButtonPressedDownTimeInMS = pulse_get_millis() - multiMSAtButtonDown;
-  
   // Tell the user functions button was released
   multi_watch_functions[multiCurrentWatchMode](BUTTONUP);
 }
