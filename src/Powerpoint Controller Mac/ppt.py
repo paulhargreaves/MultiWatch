@@ -27,7 +27,10 @@ while(1):
                       socket.send(chr(key)) # send the response back
                 if(key is 69):
                      print "Next slide request received ", key 
-                     os.system("./sendkey.osascript ' '")
+                     os.system("./sendkey.osascript 'N'")
+                elif(key is 70):
+                     print "Previous slide request received ", key 
+                     os.system("./sendkey.osascript 'P'")
                 elif(key <= 128):
                      print "Unknown key=", key
 	#	elif (key is 0):
